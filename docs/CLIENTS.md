@@ -11,7 +11,7 @@
 | Shadowrocket | [full/shadowrocket.conf](../examples/full/shadowrocket.conf) | 同 Surge；刷新周期在 App 内设置 |
 | sing-box | [full/sing-box.json](../examples/full/sing-box.json) | JSON source rule-set version 3 |
 
-模板包含 DNS、嗅探、DNS 服务器路由和完整规则顺序。用户的 DNS 已按 [DNS-WEBRTC](DNS-WEBRTC.md) 配好时，只取 `AgentRoute managed` 标记之间的规则即可。
+模板包含 DNS、嗅探、DNS 服务器路由和完整规则顺序。用户的 DNS 已按 [DNS-WEBRTC](DNS-WEBRTC.md) 配好时，只取 `AgentRoute managed` 标记之间的规则即可；sing-box 的 JSON 没有标记，取 `route.rule_set` 和 `route.rules`。
 
 <a id="baseline"></a>
 
@@ -24,7 +24,19 @@
 | Surge | Mac 5.10.0+（`[Host]` 引用规则集需要） | 只做配置检查 |
 | Shadowrocket | 未限定 | **只做文本结构检查，实体 iOS 未验证** |
 
-以上都未覆盖真实 TUN、实体手机、持续负载和真实泄露测试。低于基线时不要照搬模板：按实际版本的文档适配，或问用户是否升级。旧版 Clash 分支不支持全部字段。
+以上都未覆盖真实 TUN、实体手机、持续负载和真实泄露测试。基线是验证过的版本，不是最低要求；明确的下限只有表里写的 sing-box 1.14.0 和 Surge Mac 5.10.0。低于基线时先跑配置检查，不通过就按实际版本的文档适配，适配不了再问用户是否升级。旧版 Clash 分支不支持全部字段。
+
+<a id="config-check"></a>
+
+### 配置检查命令
+
+| 客户端 | 命令 | 说明 |
+| --- | --- | --- |
+| Mihomo 核心 | `mihomo -t -d <配置目录> -f <配置文件>` | |
+| sing-box | `sing-box check -c <配置文件>` | |
+| Surge Mac | `/Applications/Surge.app/Contents/Applications/surge-cli --check <配置文件>` | `surge-cli` 不一定在系统路径里 |
+| FlClash、Clash Verge Rev 等图形客户端 | 按当前版本确认 | 自带核心不一定提供 `mihomo -t`，例如 FlClash 0.9.2 只带 `FlClashCore`。用户同意安装后，可以用同版本官方核心检查；否则写“未做原生检查”，靠导入时的报错和第 6 步验收 |
+| Shadowrocket | 无 | 只能做文本结构检查 |
 
 <a id="where-changes-survive"></a>
 
@@ -35,12 +47,12 @@
 | 客户端 | 配置来源 | 改动放哪里 | 依据 |
 | --- | --- | --- | --- |
 | Mihomo 核心 | 本地文件 | 直接改文件。节点来自订阅的，用 `proxy-providers`，规则不受订阅影响 | 官方文档 |
-| Clash Verge Rev | 订阅 | 规则用“编辑规则”的前置规则；DNS 和嗅探用“扩展配置”或“扩展脚本” | [规则](https://www.clashverge.dev/guide/rules.html)、[扩展](https://www.clashverge.dev/guide/extend.html) |
-| FlClash | 订阅 | 完整订阅负责 DNS，要关闭“DNS 覆写”和“追加系统 DNS”。规则覆盖方式按当前版本确认，确认不了就问用户 | 2026-10 实测 DNS 开关；覆盖方式未核实 |
+| Clash Verge Rev | 订阅 | 规则用“编辑规则”的前置规则；`rule-providers`、DNS 和嗅探用“扩展脚本”，订阅里没有这些字段时也可用“扩展配置” | [规则](https://www.clashverge.dev/guide/rules.html)、[扩展](https://www.clashverge.dev/guide/extend.html) |
+| FlClash | 订阅 | 完整订阅负责 DNS，要关闭“DNS 覆写”和“追加系统 DNS”。规则和规则集优先放进 Override（覆写）入口，刷新订阅后确认还在；找不到或不生效就停下问用户，不要改订阅原文 | 2026-10 实测 DNS 开关；0.9.2 程序内能看到 Override、附加规则和 Rule providers，未实测 |
 | Surge | 自己的配置 | 直接改，或用 Detached Profile | [手册](https://manual.nssurge.com/) |
 | Surge | 托管配置 | 用模块，但有限制，见下方 | [模块](https://manual.nssurge.com/profile/module.html) |
-| Shadowrocket | 任意 | 按当前 App 版本确认本地配置和模块的行为 | 未核实 |
-| sing-box GUI | 远程配置 | 远程配置更新会覆盖。改用本地配置，或让生成方合并模板 | 未核实，按当前版本确认 |
+| Shadowrocket | 任意 | 按当前 App 版本确认本地配置和模块的行为，确认不了就停下问用户 | 未核实 |
+| sing-box GUI | 远程配置 | 远程配置更新会覆盖。改用本地配置（先问用户），或让生成方合并模板 | 未核实，按当前版本确认 |
 | 其他 GUI | 订阅 | 找“覆写 / 扩展 / Override”功能。找不到就停下问用户，不要改订阅原文 | — |
 
 ### Clash Verge Rev 的合并陷阱
@@ -48,6 +60,7 @@
 扩展配置写到的列表和 `dns` 字段会**整段替换**，包括 `nameserver-policy`，没写的字段保留。所以：
 
 - 要保留订阅原有的条目，用扩展脚本（`main(config)`）追加，不要用扩展配置覆盖。
+- `RULE-SET` 规则依赖 `rule-providers`，官方规则页没有讲规则集放哪里。用扩展脚本把 `sr-*` 合并进 `config["rule-providers"]`，再写前置规则。
 - `mixed-port`、`mode`、`ipv6`、`allow-lan`、`tun.enable` 等由应用设置页控制，写在扩展里会被丢弃，要到设置页改。
 - 官方文档明确“编辑规则”不会随订阅更新失效；扩展是否每次刷新后重新应用，文档没有逐字说明，接入后刷新一次订阅实测。
 

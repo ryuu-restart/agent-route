@@ -1,10 +1,10 @@
 # DNS 与 WebRTC 防护：Agent 排查、修复与验收
 
-本指南与共享分流规则配套。**DNS 查询路径、普通连接路径、WebRTC 候选地址必须分别检查。** 规则列表不包含浏览器设置，安装扩展也不会替你配置 DNS。这里只提供公开方法，不代表维护者或阅读者的设备已经通过验收。参考资料核对日期：2026-10-31。
+本指南与共享分流规则配套。**DNS 查询路径、普通连接路径、WebRTC 候选地址必须分别检查。** 规则列表不包含浏览器设置，安装扩展也不会替你配置 DNS。这里只提供公开方法，不代表维护者或阅读者的设备已经通过验收。参考资料核对日期：2026-11-01。
 
 ## 1. 先记录目标和现场
 
-按 [AGENTS 第 1 步](../AGENTS.md) 记录现状并保存配置前像，聊天或公开回执只写脱敏结果。本仓库默认是国内直连、海外与未知代理，不是所有请求隐藏本地出口。
+按 [AGENTS 第 1、2 步](../AGENTS.md) 记录现状并保存配置前像，聊天或公开回执只写脱敏结果。本仓库默认是国内直连、海外与未知代理，不是所有请求隐藏本地出口。
 
 不要为了取“关闭代理时的基线”中断用户现用连接。已有的运营商出口资料、用户授权的独立测试环境可辅助对照；拿不到可靠基线就标注，不能凭 IP 归属地推断无泄露。
 
@@ -27,7 +27,7 @@ DoH 加密查询与 DNS 经代理是两件事：直连 DoH 仍可让解析服务
 
 ## 3. 各客户端如何修复 DNS
 
-[examples/full/](../examples/full/) 已经写好了下面的做法，优先从模板合并，再按本节核对。每个字段的作用和踩过的坑如下，以便用户配置与模板不同时也能判断。
+`examples/full/` 里的模板已经写好了下面的做法，优先从模板合并，再按本节核对。每个字段的作用和踩过的坑如下，以便用户配置与模板不同时也能判断。
 
 ### Mihomo / Clash Meta
 
@@ -53,7 +53,7 @@ DoH 加密查询与 DNS 经代理是两件事：直连 DoH 仍可让解析服务
 
 - `[Host]` 用 `RULE-SET:地址 = server:解析器` 按名单分流查询（Mac 5.10.0+）。只有名单中的域名条目生效，自上而下首条命中。逗号分隔多个解析器需要 iOS 5.21.0+ / Mac 6.8.0+，所以模板只写首选。
 - **`encrypted-dns-follow-outbound-mode = true` 必须开。** 默认情况下加密 DNS 的连接始终走 DIRECT，不经过规则。
-- **开启后还有一个坑：** 如果匹配到的代理节点地址是域名，Surge 只记一条警告，这条 DNS 连接回退为 DIRECT。所以 `1.1.1.1` 对应的策略要指向 IP 地址的节点，并用 `surge-cli dns trace` 核实。
+- **开启后还有一个坑：** 如果匹配到的代理节点地址是域名，Surge 只记一条警告，这条 DNS 连接回退为 DIRECT。所以 `1.1.1.1` 对应的策略要指向 IP 地址的节点，并用 `surge-cli dns trace` 核实。当前走域名节点时，按 [AGENTS 第 2 步](../AGENTS.md) 停下问用户，不要替用户切换，也不要报告为通过。
 - `always-real-ip` 让内网和节点域名拿真实地址。`hijack-dns = *:53` 让发往任意服务器的明文 DNS 也进入 Surge。
 - `.local` 用 `server:force-syslib` 才能走 mDNS；`server:system` 在增强模式下走的是单播 DNS。这个选项只给 `.local` 用，官方提示用于普通域名可能造成递归。
 - 不要给 cn-ip 加 `no-resolve`，否则尚未解析的域名会跳过它。
@@ -90,7 +90,7 @@ DoH 加密查询与 DNS 经代理是两件事：直连 DoH 仍可让解析服务
 | `{"port": 53, "action": "hijack-dns"}` | 把 DNS 流量交给 DNS 模块，需要 TUN 才能接管系统查询 |
 | 域名规则之后的两条 `sniff` | 没有域名的连接先嗅探，然后再过一遍域名规则 |
 | cn-ip 放在嗅探之后 | 裸 IP 只有在所有域名判断都做完后才按 IP 判断 |
-| `domain_resolver: dns-direct` | 直连出站和域名节点用它引导解析。每个域名节点都要加上 |
+| `domain_resolver: dns-direct` | 直连出站和域名节点用它引导解析。每个域名节点都要加上，这是唯一允许改节点的字段。不加时 `sing-box check` 也能通过，但节点连不上（1.14.4 隔离实例实测） |
 | `store_fakeip: true` | 重启后保留映射，否则旧 FakeIP 连接会失败 |
 
 模板的 `dns-proxy` 只有一个上游，因为 1.14 每个服务器标签只绑定一个地址。字段以 [DNS 规则](https://sing-box.sagernet.org/configuration/dns/rule/)、[DNS 动作](https://sing-box.sagernet.org/configuration/dns/rule_action/) 和 [迁移文档](https://sing-box.sagernet.org/migration/) 为准，不要混用已弃用的写法。
@@ -119,6 +119,8 @@ Chrome / 支持该扩展的 Chromium 桌面浏览器使用 **WebRTC Network Limi
 3. 保存并重新打开测试页面；重启浏览器后再检查选项仍然生效。按实际使用需要核对无痕模式中的扩展权限；另一个浏览器配置档不自动继承安装。
 4. 如果选项不能保存或被覆盖，检查扩展冲突、启用状态与企业策略。受管理策略限制时报告具体原因，不绕过组织控制。
 
+Agent 操作不了浏览器时，一步步带用户做：安装前让用户核对名称和开发者；在选项页选中后截图发回；重启浏览器后再看一次选项。
+
 **接管方式不同，效果也不同，不要从选项名字推断结果。** Chrome 的 [API 文档](https://developer.chrome.com/docs/extensions/reference/api/privacy) 只列出 `disable_non_proxied_udp` 这个取值，没有说明没有配置代理时的行为。
 
 | 接管方式 | 要注意什么 |
@@ -143,12 +145,12 @@ Chrome / 支持该扩展的 Chromium 桌面浏览器使用 **WebRTC Network Limi
 
 | 项目 | 怎么测 | 通过标准 |
 | --- | --- | --- |
-| 规则加载 | 见下方命令 | 五类规则都已加载且条目数大于 0，与 [index.json](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json) 的 `entries` 同一量级 |
-| 分流命中 | 用下面的样本逐个查 | 每个样本命中预期规则 |
-| 出口 | `curl -s https://www.cloudflare.com/cdn-cgi/trace` 看 `ip=` 和 `loc=` | 是所选节点的出口。IPv6 另用 `curl -6` 测，不通要说明原因 |
+| 规则加载 | 见下方命令 | 五类规则都已加载。能读到条目数的客户端，条目数大于 0，与 [index.json](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json) 中 `datasets[].resources.<格式>.entries` 同一量级；读不到的（sing-box、Shadowrocket）要求每类规则至少命中一个样本，并写明没读到条目数 |
+| 分流命中 | 用下面的样本逐个查 | 每个样本命中预期规则。只看命中的规则，不看 HTTP 结果 |
+| 出口 | `curl -s https://www.cloudflare.com/cdn-cgi/trace` 看 `ip=` 和 `loc=`。系统代理模式要加 `-x http://127.0.0.1:<代理端口>`：`curl` 不读系统代理，不加可能直连 | 是所选节点的出口。IPv6 另用 `curl -6` 测，不通要说明原因 |
 | DNS 路径 | 见“DNS 验证” | 海外和未知查询到达经代理的解析器；private 不进公网 DNS |
-| WebRTC | 见“WebRTC 验证” | 候选中没有未授权的本地运营商公网地址，常用通话可用 |
-| 持久化 | 刷新一次订阅，并重启客户端 | 规则和 DNS 都还在 |
+| WebRTC | 见“WebRTC 验证” | 按判断表记录结果，常用通话由用户确认 |
+| 持久化 | 刷新一次订阅；征得用户同意后重启客户端 | 规则和 DNS 都还在。没有订阅的写“不适用”，没重启的写“重启后未验证” |
 
 分流样本：
 
@@ -161,41 +163,68 @@ Chrome / 支持该扩展的 Chromium 桌面浏览器使用 **WebRTC Network Limi
 | `114.114.114.114` | `cn-ip`，DIRECT |
 | `192.168.1.1` | LAN，DIRECT |
 | 用户自己的节点地址 | 节点例外，DIRECT |
+| `example.com` | 不在任何名单（2026-11-01 核对），走默认代理 |
+
+`doubleclick.net` 会被拒绝，`router.asus.com`、`192.168.1.1`、`114.114.114.114` 可能连不上（没有这台设备，或地址不提供网页），这些都不算失败。
 
 各客户端的查看方法：
 
 ```sh
 # Mihomo：地址和密钥取自用户的 external-controller / secret，不要写进回复。
-curl -s -H "Authorization: Bearer $SECRET" http://127.0.0.1:9090/providers/rules   # ruleCount、updatedAt
-curl -s -H "Authorization: Bearer $SECRET" http://127.0.0.1:9090/connections       # 发出请求后看 rule、rulePayload、chains
+curl -s --noproxy '*' -H "Authorization: Bearer $SECRET" http://127.0.0.1:9090/providers/rules   # ruleCount、updatedAt
+# 先开着日志流再发测试请求，看 match RuleSet(sr-proxy) using 这类行；连接失败时看 dial DIRECT (match RuleSet/sr-private)。
+curl -sN --noproxy '*' -H "Authorization: Bearer $SECRET" 'http://127.0.0.1:9090/logs?level=info'
+# /connections 只显示进行中的连接：短请求结束后就查不到，被拒绝的连接也查不到。
 
-# Surge（Mac）：不产生真实连接就能看规则判断。
+# Surge（Mac）：路径见 CLIENTS 的配置检查。不产生真实连接就能看规则判断。
 surge-cli external-resource list
 surge-cli rule match www.google.com
 surge-cli rule explain www.google.com
 surge-cli dns lookup www.google.com
 surge-cli dns trace www.google.com
 
-# sing-box：短时调高日志级别，看 match[N] 行。例如 rule_set=sr-proxy => route(PROXY)。
+# sing-box：备份后把 log.level 临时改为 debug，测完恢复，并写进报告。
+#   规则集：下载或更新时有 updated rule-set sr-proxy 行；1.14.4 的 Clash API /providers/rules 返回空列表，读不到条目数。
+#   命中：match[N] rule_set=sr-proxy => route(PROXY)。落到默认出站时没有 match 行，看 outbound 连接行。
 ```
 
-Shadowrocket 没有上述工具，用 App 内的连接记录人工核对，并如实说明。
+控制接口没有开启时不要擅自打开：请用户在设置里临时打开，或让用户看客户端的连接页，都做不到就写“未验证”。Shadowrocket 没有上述工具，用 App 内的连接记录人工核对，并如实说明。
 
 ### DNS 验证
 
-1. 保持用户现有代理开启，使用已知国内、海外、private / LAN 和未知域名四类测试；每类检查 A 与 AAAA。未知域名使用实际可控或认可的有效域名，不用不存在的随机字符串代替成功解析测试。
+1. 保持用户现有代理开启，使用已知国内、海外、private / LAN 和未知域名四类测试；每类检查 A 与 AAAA。未知域名可用 `example.com`，不用不存在的随机字符串代替成功解析测试。
 2. 在客户端的 DNS / 连接记录中核对命中规则、解析器、出站和地址族；必要时在用户授权下短时观察物理网卡与隧道。避免把原始业务日志或完整域名历史公开。
 3. 海外与未知查询应按既定策略到达经代理的解析器；private 不应被发送到公网 DNS；国内直连解析器出现本地出口属于本套策略的预期。
 4. DNS 检测网站只展示其观测到的递归解析器，不能单凭其国家 / 名称判断真实客户端出口或证明所有应用安全。结合客户端记录、实际网络路径和 IPv6 结果判断。
-5. 网络切换、代理节点切换、应用重启后复查。只有本次确实执行的组合才写“通过”。
+5. 用户自己切换过网络或节点，或同意重启应用后再复查；Agent 不主动切换节点。只有本次确实执行的组合才写“通过”。
+
+查看解析器走了哪条路：
+
+```sh
+# Mihomo：先查询，再看解析器连接。destinationIP 为 1.1.1.1 / 1.0.0.1 的 chains 应包含主代理组，223.5.5.5 / 223.6.6.6 的应为 DIRECT。
+curl -s --noproxy '*' -H "Authorization: Bearer $SECRET" 'http://127.0.0.1:9090/dns/query?name=example.com&type=A'
+curl -s --noproxy '*' -H "Authorization: Bearer $SECRET" http://127.0.0.1:9090/connections
+
+# Surge（Mac）
+surge-cli dns trace example.com
+
+# sing-box：看 debug 日志里的 dns: 行和对应出站，看不出走了哪个出站就写“未验证”。
+```
 
 ### WebRTC 验证
 
 1. 在同一浏览器配置档确认普通 HTTPS 请求的预期代理出口；这是本次比较基线，不需要关闭代理。
-2. 打开 WebRTC 官方 [Trickle ICE 示例](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)，查看 STUN / TURN 配置并收集候选。测试会联系所选服务器，使用用户认可的测试端点，不添加来历不明的 TURN 账号。
+2. 打开 WebRTC 官方 [Trickle ICE 示例](https://webrtc.github.io/samples/src/content/peerconnection/trickle-ice/)，查看 STUN / TURN 配置并收集候选。测试会联系所选服务器，使用用户认可的测试端点，不添加来历不明的 TURN 账号。Agent 操作不了浏览器时，让用户点 Gather candidates，把结果表截图发给你；里面有公网地址，不要贴到公开地方。
 3. 对比 host / srflx / relay 候选与预期路径，特别检查是否出现未授权直连的本地运营商公网 IPv4 / IPv6。relay 是中继服务器地址，不要求与 HTTP 出口完全相同；代理的多个出口也需结合路径核实。
-4. host 候选显示 mDNS 名称不等于已证明公网地址隐藏；“没有候选”也可能是 STUN 不可达。网络失败、权限差异或单次页面空白都不能单独记作保护通过。
-5. 重新打开浏览器并复测，再用用户常用的音视频 / WebRTC 业务做功能回归。出现通话问题时记录影响，按用户选择回退该选项或研究受支持的代理 / TURN 路径，不静默放宽防护。
+4. host 候选显示 mDNS 名称不等于已证明公网地址隐藏。网络失败、权限差异或单次页面空白都不能单独记作保护通过。按下表判断：
+
+   | 看到什么 | 结论 |
+   | --- | --- |
+   | 出现未授权的本地运营商公网 IPv4 / IPv6 | 未通过 |
+   | 有公网候选，且都是代理出口或已知中继 | 通过 |
+   | 没有公网候选 | 还不能下结论。征得用户同意后开一个没装扩展的临时配置档对照：对照档能拿到 srflx，说明 STUN 可达、选项起了作用，记为通过；对照档也没有，记“未验证”。对照会让 STUN 服务器看到对照档的出口，要先告诉用户 |
+
+5. 征得用户同意后重新打开浏览器并复测（未保存的页面可能丢失）。音视频 / WebRTC 业务的功能回归只能由用户确认，没做就写“未验证”。出现通话问题时记录影响，按用户选择回退该选项或研究受支持的代理 / TURN 路径，不静默放宽防护。
 
 <a id="report"></a>
 
@@ -203,14 +232,17 @@ Shadowrocket 没有上述工具，用 App 内的连接记录人工核对，并�
 
 ```text
 检查时间与环境：系统、浏览器配置档、核心版本
-规则来源：release commit SHA、manifest 时间、所用格式、哈希结果
-配置位置：改动放在哪里、刷新订阅后是否还在
+规则来源：release commit SHA（git ls-remote https://github.com/ryuu-restart/agent-route refs/heads/release）、manifest 时间、所用格式、哈希结果
+规则加载：五类规则的条目数或命中证据、自动刷新周期
+配置位置：改动放在哪里、刷新订阅后是否还在、重启后是否还在
 代理范围：系统代理 / TUN / VPN，IPv4 与 IPv6 各自覆盖情况
+分流：每个样本命中的规则
 DNS：国内 / 海外 / private / 未知查询的解析器与出站（脱敏）
 WebRTC：Network Limiter 的实际选项，重启后是否保持
 测试：普通网页出口、ICE 候选分类、音视频回归结果
-变更：修改了哪些字段，自己的节点和例外是否保留
-回退：对应配置前像与扩展原选项的恢复位置
+变更：修改了哪些字段，模板补充了什么，自己的节点和例外是否保留
+节点例外：写入了多少条，节点变化后要做什么
+回退：对应配置前像与扩展原选项的恢复位置，发给用户的恢复方法
 未验证：移动端、无痕档、IPv6、其他 App、切网等未实际测试项
 ```
 
