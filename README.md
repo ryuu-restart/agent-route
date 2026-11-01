@@ -6,6 +6,11 @@
 
 [复制提示词](#agent-prompt) · [客户端接入](docs/CLIENTS.md) · [DNS / WebRTC 防护](docs/DNS-WEBRTC.md)
 
+> [!IMPORTANT]
+> **推荐使用 ChatGPT 6.1 Sol Xhigh 或更高智能水平的 Agent 来操作。**
+>
+> 接入要同时处理规则、DNS 和 WebRTC，并逐项验证。目前已知部分能力较弱的 Agent 无法按此流程完成部署。
+
 <a id="about"></a>
 
 ## 这是什么？
