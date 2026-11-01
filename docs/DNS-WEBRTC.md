@@ -6,6 +6,8 @@
 
 按 [AGENTS 第 1、2 步](../AGENTS.md) 记录现状并保存配置前像，聊天或公开回执只写脱敏结果。本仓库默认是国内直连、海外与未知代理，不是所有请求隐藏本地出口。
 
+先通过 [TUN 前置检查](CLIENTS.md#tun-required)。只有系统代理时，引导使用者开启 TUN 并等待确认，不能执行后续接入或把非 TUN 的命令行结果作为最终验收。
+
 不要为了取“关闭代理时的基线”中断用户现用连接。已有的运营商出口资料、用户授权的独立测试环境可辅助对照；拿不到可靠基线就标注，不能凭 IP 归属地推断无泄露。
 
 ## 2. DNS 参考策略
@@ -24,6 +26,19 @@
 DoH 加密查询与 DNS 经代理是两件事：直连 DoH 仍可让解析服务看到本地出口。只把地址换成 1.1.1.1 也不能证明走了代理。多个解析器如果并发查询，**每个**都必须符合对应的直连 / 代理策略，不能只检查第一个。
 
 本仓库的 `cn-ip` 不是“所有 DNS 查询直连”的开关。应先匹配域名规则，再处理确实得到真实地址的 IP 规则。不要把 FakeIP 当真实中国 IP；IPv4 与 IPv6 混合答案也不应因为其中一个地址在中国就整体放行。
+
+<a id="private-dns-preflight"></a>
+
+### 内网解析前置检查
+
+模板的 `system`、`server:system`、`force-syslib` 和 `dns-local` 都依赖目标设备实际的系统解析配置，名称不等于“仅在内网解析”。应用前检查系统解析器和分域解析：macOS 可只读查看 `scutil --dns`，Windows 查看 `Get-DnsClientServerAddress`，Linux 按环境用 `resolvectl status`。只记必要的解析器和路径，不公开整份输出。
+
+- 已确认是可信 LAN / 分域解析器，且不会把这些查询继续发给公网时，可使用对应的本地解析路径；回环 stub 也要核对它的上游和本代理是否形成循环。
+- 系统只有公网 DNS，或者不能查清上游时，**首次应用前暂停**。告诉用户“当前系统 DNS 不能保证内网域名不外发”，请其提供认可的 LAN / 分域解析方式；不能凭空猜一个路由器地址，也不能把公共 DoH 当作内网解析器。
+- 用户明确不需要相关内网域名、并同意阻止这些域名的解析时，才可按实际客户端能力在本地拒绝相应 DNS 查询。这是会影响可用性的目标选择，必须列入方案和报告，不能静默开启。Mihomo 的 `rcode://refused`、sing-box DNS 的 `reject` 可作为能力依据；须保留用户例外并重新验收。Surge / Shadowrocket 按实际版本确认，不能照搬字段。
+- 没有可接受的处理方案就保留原配置，状态为等待用户；不能因为没有实际路由器服务就把 private 查询不外发这一策略标为不适用。NXDOMAIN 只表示没有解析结果，不证明查询留在内网；没有观察物理线包时也不要宣称抓到了实际外发。
+
+依据：[Mihomo DNS 类型](https://wiki.metacubex.one/config/dns/type/)、[sing-box DNS 动作](https://sing-box.sagernet.org/configuration/dns/rule_action/)。TUN 开启也不改变上述上游选择要求。
 
 ## 3. 各客户端如何修复 DNS
 
@@ -53,7 +68,7 @@ DoH 加密查询与 DNS 经代理是两件事：直连 DoH 仍可让解析服务
 
 - `[Host]` 用 `RULE-SET:地址 = server:解析器` 按名单分流查询（Mac 5.10.0+）。只有名单中的域名条目生效，自上而下首条命中。逗号分隔多个解析器需要 iOS 5.21.0+ / Mac 6.8.0+，所以模板只写首选。
 - **`encrypted-dns-follow-outbound-mode = true` 必须开。** 默认情况下加密 DNS 的连接始终走 DIRECT，不经过规则。
-- **开启后还有一个坑：** 如果匹配到的代理节点地址是域名，Surge 只记一条警告，这条 DNS 连接回退为 DIRECT。所以 `1.1.1.1` 对应的策略要指向 IP 地址的节点，并用 `surge-cli dns trace` 核实。当前走域名节点时，按 [AGENTS 第 2 步](../AGENTS.md) 停下问用户，不要替用户切换，也不要报告为通过。
+- **开启后还有一个坑：** 如果匹配到的代理节点地址是域名，且没有可用的 `[Host]` IP 映射，这条 DNS 连接可能回退为 DIRECT。官方支持为节点域名增加 `[Host]` IP 映射，或使用 IP 地址节点；前者需要核实当前有效 IP，并在 IP 变化时维护。按 [AGENTS 第 2 步](../AGENTS.md) 说明代价并取得用户选择，不要替用户切换。应用后用 `surge-cli dns trace` 和连接记录核实，不能仅凭写了映射就报告通过。
 - `always-real-ip` 让内网和节点域名拿真实地址。`hijack-dns = *:53` 让发往任意服务器的明文 DNS 也进入 Surge。
 - `.local` 用 `server:force-syslib` 才能走 mDNS；`server:system` 在增强模式下走的是单播 DNS。这个选项只给 `.local` 用，官方提示用于普通域名可能造成递归。
 - 不要给 cn-ip 加 `no-resolve`，否则尚未解析的域名会跳过它。
@@ -115,7 +130,7 @@ WebRTC 会建立 ICE 候选并尝试音视频 / 数据连接。仅配置 HTTP(S)
 Chrome / 支持该扩展的 Chromium 桌面浏览器使用 **WebRTC Network Limiter**：
 
 1. 打开 [Chrome Web Store 官方条目](https://chromewebstore.google.com/detail/webrtc-network-limiter/npeicpdbkakmehahjeeohfdhnlpdklia)，核对名称、Google 开发者标识和扩展 ID `npeicpdbkakmehahjeeohfdhnlpdklia`，在目标浏览器配置档安装。
-2. 打开扩展的 **Options / 选项**，选择 **Disable non-proxied UDP**（禁用非代理 UDP），对应策略值 `disable_non_proxied_udp`。
+2. 打开扩展的 **Options / 选项**，选择对应策略值 `disable_non_proxied_udp` 的选项。**0.2.1.4 的界面名称是 Use my proxy server (if present)**（第四项），并没有 Disable non-proxied UDP 这串字；其他版本可能使用后一个名称。该版本的选项标识与已安装官方扩展代码已核对，不能因为名称不同误选其他项。版本或界面再变化时，先核对实际策略值，不凭中文翻译或单选项位置猜测。
 3. 保存并重新打开测试页面；重启浏览器后再检查选项仍然生效。按实际使用需要核对无痕模式中的扩展权限；另一个浏览器配置档不自动继承安装。
 4. 如果选项不能保存或被覆盖，检查扩展冲突、启用状态与企业策略。受管理策略限制时报告具体原因，不绕过组织控制。
 
@@ -141,13 +156,16 @@ Agent 操作不了浏览器时，一步步带用户做：安装前让用户核�
 
 ### 验收表
 
-全程保持用户的代理开启。每项都要有实际输出作证据；没做的写“未验证”。
+全程保持用户的代理开启。每项都要有实际输出作证据；没做的写“未验证”，确实不适用的写明理由。按 [AGENTS 的状态表](../AGENTS.md#执行范围与最终状态) 汇总；隔离实例的结果只覆盖该实例，不代表用户的 TUN、浏览器或手机已经通过。
+
+未确认 TUN 时停在前置检查，不能继续本表并汇总成接入通过。非 TUN 隔离测试只可另列为诊断证据。
 
 | 项目 | 怎么测 | 通过标准 |
 | --- | --- | --- |
-| 规则加载 | 见下方命令 | 五类规则都已加载。能读到条目数的客户端，条目数大于 0，与 [index.json](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json) 中 `datasets[].resources.<格式>.entries` 同一量级；读不到的（sing-box、Shadowrocket）要求每类规则至少命中一个样本，并写明没读到条目数 |
+| 规则加载 | 见下方命令 | 完整接入要求五类规则加载；Surge 托管受限接入按 [CLIENTS](CLIENTS.md#limited-integration) 核对四类模块资源及主配置代理行为。能读到条目数的客户端，条目数大于 0，与 [index.json](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json) 中 `datasets[].resources.<格式>.entries` 同一量级；读不到的每类至少命中一个样本，注明没读到条目数 |
 | 分流命中 | 用下面的样本逐个查 | 每个样本命中预期规则。只看命中的规则，不看 HTTP 结果 |
-| 出口 | `curl -s https://www.cloudflare.com/cdn-cgi/trace` 看 `ip=` 和 `loc=`。系统代理模式要加 `-x http://127.0.0.1:<代理端口>`：`curl` 不读系统代理，不加可能直连 | 是所选节点的出口。IPv6 另用 `curl -6` 测，不通要说明原因 |
+| 网页可用性 | 按下方“真实请求”复查国内、海外 HTTPS 和适用的内网服务，对比改动前结果 | 原本可用的服务仍可用，无新增 DNS、连接或 TLS 错误；规则命中正确不能代替此项 |
+| TUN、出口与 IPv6 | 核对运行状态和路由，再按下方“出口与 IPv6”验证实际目标应用 | TUN 确实接管目标流量，出口符合当前节点；IPv6 须有实际地址和路径证据，不能仅以 `curl -6` 成功判定 |
 | DNS 路径 | 见“DNS 验证” | 海外和未知查询到达经代理的解析器；private 不进公网 DNS |
 | WebRTC | 见“WebRTC 验证” | 按判断表记录结果，常用通话由用户确认 |
 | 持久化 | 刷新一次订阅；征得用户同意后重启客户端 | 规则和 DNS 都还在。没有订阅的写“不适用”，没重启的写“重启后未验证” |
@@ -163,17 +181,39 @@ Agent 操作不了浏览器时，一步步带用户做：安装前让用户核�
 | `114.114.114.114` | `cn-ip`，DIRECT |
 | `192.168.1.1` | LAN，DIRECT |
 | 用户自己的节点地址 | 节点例外，DIRECT |
-| `example.com` | 不在任何名单（2026-11-01 核对），走默认代理 |
+| `example.com` | 2026-11-01 核对不在名单；本次先查实际规则资源，仍未知时才预期默认代理 |
 
 `doubleclick.net` 会被拒绝，`router.asus.com`、`192.168.1.1`、`114.114.114.114` 可能连不上（没有这台设备，或地址不提供网页），这些都不算失败。
 
-各客户端的查看方法：
+### 真实请求
+
+与分流命中分开验收：代理保持开启，在改动前后用相同的接管方式访问国内、海外 HTTPS 各一个，以及用户实际使用的内网服务。可用 `https://www.baidu.com/`、`https://www.google.com/`，遇到站点自身限制时选用户认可的同类站点；不为 LAN 样本不存在而判失败。每个公网站点做 3 次有界请求，记录成功数、HTTP 状态和 DNS / TLS / 超时错误，单次不超过 15 秒，不无限重试到成功。
+
+TUN 已确认后，按实际目标应用的路径测试，不额外加 HTTP 代理。必要时仅在本次 curl 进程排除环境 HTTP 代理（`--noproxy '*'`），系统 TUN 仍保持开启。例：
+
+```sh
+curl --noproxy '*' --connect-timeout 5 --max-time 15 -sS -o /dev/null -w '%{http_code}\n' https://www.baidu.com/
+curl --noproxy '*' --connect-timeout 5 --max-time 15 -sS -o /dev/null -w '%{http_code}\n' https://www.google.com/
+```
+
+Windows PowerShell 使用 `curl.exe`，空输出设备改为 `NUL`，按实际 shell 处理引号。`curl` 不会自动读取 GUI 的系统 HTTP 代理，显式 `-x` 只可用于另列的核心诊断，不能绕过 TUN 要求，也不能替代目标浏览器的真实页面访问。改动后新增的间歇失败不能被“规则命中正确”抵消，先定位，无法修复则恢复受影响的配置；改动前已经失败的服务写明基线，不能宣称本次修复了它。
+
+### 出口与 IPv6
+
+1. 用目标浏览器打开 `https://www.cloudflare.com/cdn-cgi/trace`，记录脱敏的 `ip=` 和 `loc=`；命令行测试按上一节选实际接管方式。它只证明该次连接的出口，不能凭国家判断它属于所选节点。
+2. **经过 HTTP 或由代理解析目标域名的 SOCKS 代理时，`curl -6` 不足以约束代理对目标的地址族。** HTTP CONNECT 把目标交给代理连接，不能把 curl 到回环代理的连接当作 IPv6 目标连接。使用经确认只有 AAAA 的测试端点，或能够明确返回 IPv6 观测地址的端点，并结合客户端目的地址 / 出站记录核对。例如 [ipify 官方 IPv6 端点](https://www.ipify.org/) `https://api6.ipify.org/`；仍要检查返回的确实是 IPv6，不能只看 HTTP 成功。没有合适端点或节点不支持则写原因和未验证项。
+3. **设备接管另测。** 在目标浏览器或应用访问 IPv6 测试端点，结合 TUN / VPN 的 IPv6 路由和连接记录，确认目标流量被接管。显式 HTTP 代理的 IPv6 出口成功不证明系统 IPv6、UDP 或其他应用没有旁路。纯系统代理模式也不能宣称接管了整机 IPv6。
+4. 目标网络没有 IPv6 时，设备 IPv6 连通性可记“不适用：当前网络无 IPv6”，同时写“有 IPv6 网络时的行为未验证”；有 IPv6 但测不到路径则是未验证。不要为通过验收关闭 IPv6 或切换节点。
+
+依据：[curl 的 HTTP 代理机制](https://everything.curl.dev/usingcurl/proxies/http.html)、[curl `--ipv6`](https://curl.se/docs/manpage.html#-6)。
+
+### 各客户端的查看方法
 
 ```sh
 # Mihomo：地址和密钥取自用户的 external-controller / secret，不要写进回复。
 curl -s --noproxy '*' -H "Authorization: Bearer $SECRET" http://127.0.0.1:9090/providers/rules   # ruleCount、updatedAt
 # 先开着日志流再发测试请求，看 match RuleSet(sr-proxy) using 这类行；连接失败时看 dial DIRECT (match RuleSet/sr-private)。
-curl -sN --noproxy '*' -H "Authorization: Bearer $SECRET" 'http://127.0.0.1:9090/logs?level=info'
+curl -sN --max-time 30 --noproxy '*' -H "Authorization: Bearer $SECRET" 'http://127.0.0.1:9090/logs?level=info'
 # /connections 只显示进行中的连接：短请求结束后就查不到，被拒绝的连接也查不到。
 
 # Surge（Mac）：路径见 CLIENTS 的配置检查。不产生真实连接就能看规则判断。
@@ -188,6 +228,8 @@ surge-cli dns trace www.google.com
 #   命中：match[N] rule_set=sr-proxy => route(PROXY)。落到默认出站时没有 match 行，看 outbound 连接行。
 ```
 
+地址、端口和命令路径都替换为现场值。日志流在一个有界会话中观察，同时从另一会话发请求；30 秒期限后的 curl 超时是结束观察，不是路由失败。测试完关闭观察会话。DNS 缓存命中可能不产生新的解析器连接，先确认是否缓存命中；缺少连接记录时不能从空结果推断 DNS 已走代理，不擅自清空全机缓存。
+
 控制接口没有开启时不要擅自打开：请用户在设置里临时打开，或让用户看客户端的连接页，都做不到就写“未验证”。Shadowrocket 没有上述工具，用 App 内的连接记录人工核对，并如实说明。
 
 ### DNS 验证
@@ -197,6 +239,8 @@ surge-cli dns trace www.google.com
 3. 海外与未知查询应按既定策略到达经代理的解析器；private 不应被发送到公网 DNS；国内直连解析器出现本地出口属于本套策略的预期。
 4. DNS 检测网站只展示其观测到的递归解析器，不能单凭其国家 / 名称判断真实客户端出口或证明所有应用安全。结合客户端记录、实际网络路径和 IPv6 结果判断。
 5. 用户自己切换过网络或节点，或同意重启应用后再复查；Agent 不主动切换节点。只有本次确实执行的组合才写“通过”。
+
+**先触发 DNS 模块，再看日志。** TUN 已接管明文 DNS 后，在目标系统执行 `dig example.com A`、`dig example.com AAAA`（Windows 可用 `nslookup -type=A example.com`、`nslookup -type=AAAA example.com`），按四类域名分别替换并关联本次请求的客户端 DNS 日志。sing-box 应看到 `hijack-dns` 和 DNS 模块处理记录；若只有缓存，先区分缓存结果，不能当作新的上游路径证据。普通 `curl` 或 SOCKS 的远端域名请求可能不经过本地 DNS 模块，不能用网页成功替代此项。没有可观察的 DNS 入口或看不到对应日志时写未验证，不为测试新增监听端口或切回非 TUN。
 
 查看解析器走了哪条路：
 
@@ -232,18 +276,27 @@ surge-cli dns trace example.com
 
 ```text
 检查时间与环境：系统、浏览器配置档、核心版本
-规则来源：release commit SHA（git ls-remote https://github.com/ryuu-restart/agent-route refs/heads/release）、manifest 时间、所用格式、哈希结果
+最终状态：完整通过 / 部分完成 / 等待用户 / 失败已回退（恢复未确认时如实写明）
+接入方式：完整 / Surge 托管受限，用户接受的限制；本次实际操作的设备或隔离实例
+文档与模板：代码版本或本地候选稿身份，是否已发布
+规则来源：查询到的 release commit SHA、manifest 时间、所用格式、哈希结果；各客户端资源的实际更新时间
 规则加载：五类规则的条目数或命中证据、自动刷新周期
+受限接入：四类模块资源、主配置代理规则证据；未接入的 proxy 层不得写为已加载
 配置位置：改动放在哪里、刷新订阅后是否还在、重启后是否还在
-代理范围：系统代理 / TUN / VPN，IPv4 与 IPv6 各自覆盖情况
+TUN 前置：客户端中的实际名称、运行状态、目标流量与 DNS 接管证据；未启用则等待用户
+代理范围：TUN / 对应系统隧道及 rule / global / direct 模式；IPv6 代理出口与设备接管分别记录
 分流：每个样本命中的规则
-DNS：国内 / 海外 / private / 未知查询的解析器与出站（脱敏）
+网页可用性：国内 / 海外各 3 次及适用内网服务，改动前后成功数与新增错误
+DNS：国内 / 海外 / private / 未知查询的解析器与出站（脱敏）；系统 DNS 上游及内网解析的前置判断
 WebRTC：Network Limiter 的实际选项，重启后是否保持
 测试：普通网页出口、ICE 候选分类、音视频回归结果
 变更：修改了哪些字段，模板补充了什么，自己的节点和例外是否保留
 节点例外：写入了多少条，节点变化后要做什么
 回退：对应配置前像与扩展原选项的恢复位置，发给用户的恢复方法
 未验证：移动端、无痕档、IPv6、其他 App、切网等未实际测试项
+不适用：项目及理由；等待用户时给出一个具体下一步
 ```
+
+原生 URL 约每 24 小时各自刷新，不保证所有资源同代；`git ls-remote` 得到的是查询时的发布代，不自动等于客户端已加载的代。只能观察到资源更新时间时就这样报告，不能把最新 SHA 冒充已加载 SHA；严格同代需求见 [SYNC](SYNC.md)。每个结果都带“通过 / 失败 / 未验证 / 不适用”和简短证据。
 
 只修改用户已授权的目标，优先保存配置前像并逐项验证。发现 DNS 绕路就修 DNS 路径，发现 WebRTC 绕路就查浏览器策略与实际 UDP / IPv6 路由；不要用重装服务器、换节点或覆盖所有配置替代定位。
