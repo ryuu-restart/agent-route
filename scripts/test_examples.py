@@ -278,7 +278,10 @@ class AgentGuidanceTests(unittest.TestCase):
         self.assertIn('存成本地文件', prompt)
         self.assertIn('请复查我的 AgentRoute 接入', readme)
         report = (ROOT / 'docs/DNS-WEBRTC.md').read_text(encoding='utf-8')
-        report = report[report.index('简短交付格式'):]
+        # Only the report section counts; reference material after it must not satisfy these phrases.
+        start = report.index('## 简短交付格式')
+        end = report.find('\n## ', start + 1)
+        report = report[start:] if end == -1 else report[start:end]
         for phrase in ('后续更新', '文档提交 SHA', '接入范围'):
             self.assertIn(phrase, report)
 
