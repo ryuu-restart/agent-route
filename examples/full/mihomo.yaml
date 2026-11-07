@@ -150,7 +150,10 @@ rules:
   - RULE-SET,sr-reject,REJECT
   - RULE-SET,sr-proxy,PROXY
   - RULE-SET,sr-direct,DIRECT
-  # No no-resolve here: an unknown domain must be resolved before the CN check.
-  - RULE-SET,sr-cn-ip,DIRECT
+  # no-resolve: the core tests only one resolved address (IPv4 first), so a domain whose
+  # answers mix China and other addresses would go DIRECT. Unknown domains therefore use
+  # the default proxy; this still matches connections that arrive with a real address.
+  # Dropping no-resolve breaks that goal: report it as a limit and let the user choose.
+  - RULE-SET,sr-cn-ip,DIRECT,no-resolve
   - MATCH,PROXY
   # <<< AgentRoute managed end
