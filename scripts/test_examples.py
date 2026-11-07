@@ -411,6 +411,17 @@ class TemplateTests(unittest.TestCase):
         if direct:
             self.assertTrue(dns.get('direct-nameserver-follow-policy'))
 
+    def test_templates_keep_the_dns_path_of_user_domain_exceptions(self):
+        # Clearing the direct resolver, or a [Host] map that only lists the project's sets,
+        # silently moves a user's domain-based DIRECT exception to the proxied resolver
+        # unless the merge gives it a DNS entry for the same domains.
+        self.assertIn('nameserver-policy', comment_before('mihomo.yaml', 'direct-nameserver:'))
+        surge = (FULL / 'surge.conf').read_text(encoding='utf-8')
+        host = surge[surge.index('[Host]'):]
+        self.assertIn('domain-based DIRECT rules', host[host.rindex('RULE-SET:'):])
+        readme = (ROOT / 'examples/README.md').read_text(encoding='utf-8')
+        self.assertIn('保留用户例外的解析去向', readme)
+
 
 class AgentGuidanceTests(unittest.TestCase):
     def test_update_reminder_survives_in_prompt_flow_and_report(self):
