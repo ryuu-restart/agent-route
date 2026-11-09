@@ -424,26 +424,17 @@ class TemplateTests(unittest.TestCase):
 
 
 class AgentGuidanceTests(unittest.TestCase):
-    def test_update_reminder_survives_in_prompt_flow_and_report(self):
-        readme = (ROOT / 'README.md').read_text(encoding='utf-8')
-        begin = readme.index('请帮我接入 AgentRoute')
-        prompt = readme[begin:readme.index('```', begin)]
-        flow = (ROOT / 'AGENTS.md').read_text(encoding='utf-8')
-        for text in (prompt, flow):
-            for phrase in ('经常更新', '拉分支', 'VPS', '手动复查'):
-                self.assertIn(phrase, text)
-        self.assertIn('存成本地文件', prompt)
-        self.assertIn('请复查我的 AgentRoute 接入', readme)
-        report = (ROOT / 'docs/DNS-WEBRTC.md').read_text(encoding='utf-8')
-        # Only the report section counts; reference material after it must not satisfy these phrases.
-        start = report.index('## 简短交付格式')
-        end = report.find('\n## ', start + 1)
-        report = report[start:] if end == -1 else report[start:end]
-        for phrase in ('后续更新', '文档提交 SHA', '接入范围'):
-            self.assertIn(phrase, report)
+    def test_browser_checks_link_to_the_three_test_pages(self):
+        expected = {'https://browserleaks.com/ip', 'https://browserleaks.com/dns',
+                    'https://browserleaks.com/webrtc'}
+        for name in ('README.md', 'AGENTS.md'):
+            with self.subTest(name=name):
+                text = (ROOT / name).read_text(encoding='utf-8')
+                links = set(re.findall(r'\]\((https://browserleaks\.com/[^)]+)\)', text))
+                self.assertEqual(links, expected)
 
     def test_acceptance_standard_keeps_every_item_and_its_evidence_rule(self):
-        # The acceptance section is the one place that decides a result. An item that loses
+        # The advanced acceptance section defines full-device results. An item that loses
         # its evidence requirement lets a configuration screenshot pass as a verified path.
         text = (ROOT / 'docs/DNS-WEBRTC.md').read_text(encoding='utf-8')
         section = text[text.index('<a id="acceptance"></a>'):text.index('<a id="report"></a>')]
