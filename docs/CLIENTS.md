@@ -36,8 +36,8 @@ TUN 和系统代理可以同时开。这时网页可能走系统代理、WebRTC 
 
 | 客户端 / 核心 | 使用格式 | 资料入口 |
 | --- | --- | --- |
-| Mihomo 及其图形客户端 | `mihomo/<规则>.yaml`，域名与 IP 使用相应 behavior | [规则集](https://wiki.metacubex.one/config/rule-providers/)、[DNS](https://wiki.metacubex.one/config/dns/) |
-| Surge / Shadowrocket | `surge/<规则>.list`，无策略列的 RULE-SET 文本 | [Surge 规则集](https://manual.nssurge.com/rules/ruleset.html)；Shadowrocket 目前没查到公开的官方配置手册，核对 App 内说明、[社区手册](https://github.com/LOWERTOP/Shadowrocket)（非官方）和实际能力，不直接照搬 Surge 字段 |
+| Clash 系列（Mihomo 内核） | `mihomo/<规则>.yaml`，域名与 IP 使用相应 behavior | [规则集](https://wiki.metacubex.one/config/rule-providers/)、[DNS](https://wiki.metacubex.one/config/dns/) |
+| 小火箭（Shadowrocket）/ Surge | `surge/<规则>.list`，无策略列的 RULE-SET 文本 | [Surge 规则集](https://manual.nssurge.com/rules/ruleset.html)；Shadowrocket 目前没查到公开的官方配置手册，核对 App 内说明、[社区手册](https://github.com/LOWERTOP/Shadowrocket)（非官方）和实际能力，不直接照搬 Surge 字段 |
 | sing-box 及其图形客户端 | `sing-box/<规则>.json`，source rule-set version 3 | [规则集](https://sing-box.sagernet.org/configuration/rule-set/)、[迁移说明](https://sing-box.sagernet.org/migration/) |
 
 `<规则>` 为 private、reject、proxy、direct、cn-ip；地址前缀为 `https://raw.githubusercontent.com/ryuu-restart/agent-route/release/`。格式版本是实际兼容要求，不是文档装饰。旧格式公开地址继续保留，但新接入优先选择索引中的标准资源。来源是镜像或自建转换时，内容等效且刷新正常就保留，报告注明未核对发布代。
@@ -54,6 +54,8 @@ TUN 和系统代理可以同时开。这时网页可能走系统代理、WebRTC 
 
 ### Mihomo
 
+实际使用 Mihomo 内核的 Clash 客户端选此入口，例如 Clash Verge Rev 和 FlClash。旧版 Clash 按实际版本确认远程规则集、对应规则类型和持久覆盖能力。[Clash Verge Rev](https://github.com/clash-verge-rev/clash-verge-rev) · [FlClash](https://github.com/chen08209/FlClash)
+
 从索引取 `mihomo` 资源，使用 HTTP `rule-providers` 及对应数据集的 `mihomo_behavior`，按当前核心设置刷新间隔。通过客户端的持久覆盖替换 `rules`，引用项目规则集并以 `MATCH` 指向现有代理组。[Mihomo 规则集](https://wiki.metacubex.one/config/rule-providers/)
 
 ### Surge
@@ -62,7 +64,7 @@ TUN 和系统代理可以同时开。这时网页可能走系统代理、WebRTC 
 
 ### Shadowrocket
 
-读取 `surge` 格式的规则文件。按当前版本支持的规则集引用、刷新选项和最终策略，在可持久编辑的配置中替换业务规则。具体字段按 App 能力核实。
+小火箭（Shadowrocket）用此入口，读取 `surge` 格式的规则文件。按当前版本支持的规则集引用、刷新选项和最终策略，在可持久编辑的配置中替换业务规则。具体字段按 App 能力核实。
 
 ### sing-box
 

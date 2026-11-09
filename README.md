@@ -43,11 +43,11 @@ Claude 的使用资格以 Anthropic 的地区和账号政策为准。当前支�
 
 把对应的入口交给 Agent。它会识别客户端的覆盖方式，并接入对应格式的原生远程规则。
 
-[Mihomo](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/mihomo.json) · [Surge](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/surge.json) · [Shadowrocket](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/shadowrocket.json) · [sing-box](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/sing-box.json)
+[Clash 系列（Mihomo 内核）](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/mihomo.json) · [小火箭（Shadowrocket）](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/shadowrocket.json) · [Surge](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/surge.json) · [sing-box](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/sing-box.json)
 
-上方是供 Agent 读取的订阅入口。客户端刷新的是下表的规则集。手动接入也可直接使用这些地址。
+使用 Mihomo 内核的 Clash Verge Rev 和 FlClash 等客户端选 Clash 系列入口。上方链接供 Agent 读取，客户端自动刷新下表的规则集。
 
-| 规则 | Mihomo | Surge / Shadowrocket | sing-box |
+| 规则 | Clash（Mihomo 内核） | 小火箭 / Surge | sing-box |
 | --- | --- | --- | --- |
 | 内网 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/private.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/private.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/private.json) |
 | 拦截 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/reject.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/reject.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/reject.json) |
