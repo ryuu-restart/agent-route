@@ -12,13 +12,13 @@ from public_formats import BASE_URL, DATASETS, SYNTHETIC
 
 ROOT = Path(__file__).resolve().parents[1]
 FULL = ROOT / 'examples/full'
-TEXT_SUFFIXES = {'.md', '.py', '.json', '.yaml', '.yml', '.conf', '.txt'}
+TEXT_SUFFIXES = {'.md', '.py', '.json', '.yaml', '.yml', '.conf', '.txt', '.svg'}
 
 
 def published_text():
     """Every text file this repository publishes, except upstream licences and this file."""
     top = [path for path in ROOT.iterdir() if path.is_file()]
-    nested = [path for folder in ('.github', 'docs', 'examples', 'schemas', 'scripts')
+    nested = [path for folder in ('.github', 'assets', 'docs', 'examples', 'schemas', 'scripts', 'subscriptions')
               for path in (ROOT / folder).rglob('*') if path.is_file()]
     for path in sorted(top + nested):
         if path.suffix in TEXT_SUFFIXES and path != Path(__file__).resolve():
@@ -424,6 +424,28 @@ class TemplateTests(unittest.TestCase):
 
 
 class AgentGuidanceTests(unittest.TestCase):
+    def test_subscription_links_select_the_correct_native_format(self):
+        master = BASE_URL.replace('/release/', '/master/')
+        clients = {'mihomo': 'mihomo', 'surge': 'surge', 'shadowrocket': 'surge', 'sing-box': 'sing-box'}
+        readme = (ROOT / 'README.md').read_text(encoding='utf-8')
+        adapters = (ROOT / 'docs/CLIENTS.md').read_text(encoding='utf-8')
+        for client, fmt in clients.items():
+            with self.subTest(client=client):
+                path = f'subscriptions/{client}.json'
+                subscription = json.loads((ROOT / path).read_text(encoding='utf-8'))
+                self.assertEqual(subscription, {
+                    'schema_version': 1,
+                    'kind': 'agentroute_rule_subscription',
+                    'client': client,
+                    'format': fmt,
+                    'index_url': BASE_URL + 'index.json',
+                    'adapter_url': 'https://github.com/ryuu-restart/agent-route/blob/master/docs/CLIENTS.md#' + client,
+                    'routing_mode': 'replace',
+                    'final_action': 'PROXY',
+                })
+                self.assertIn(f']({master}{path})', readme)
+                self.assertRegex(adapters, rf'(?im)^### {re.escape(client)}$')
+
     def test_browser_checks_link_to_the_three_test_pages(self):
         expected = {'https://browserleaks.com/ip', 'https://browserleaks.com/dns',
                     'https://browserleaks.com/webrtc'}
