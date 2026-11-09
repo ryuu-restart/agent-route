@@ -25,7 +25,7 @@
     <path d="M624 250L634 260M634 250L624 260" stroke="#f1bd83" stroke-width="3" stroke-linecap="round" />
     <g font-family="PingFang SC, Microsoft YaHei, Noto Sans CJK SC, system-ui, sans-serif">
       <text x="50" y="120" fill="#eff5ff" font-size="49" font-weight="700">客户端分流</text>
-      <text x="53" y="166" fill="#bbcee5" font-size="27">Agent 检查、配置与验证</text>
+      <text x="53" y="166" fill="#bbcee5" font-size="27">Agent 直接覆盖旧规则</text>
       <text x="53" y="205" fill="#91b6ff" font-size="24">Claude Code · 桌面端</text>
       <g font-size="35" font-weight="650">
         <text x="666" y="67" fill="#74dfb9">直连</text>

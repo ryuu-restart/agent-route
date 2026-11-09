@@ -4,11 +4,11 @@
 
 **把 Claude 的网络配置交给 Agent。**
 
-面向 Windows 和 Mac 上的 Claude Code 与 Claude 桌面端。Agent 先检查你现有的代理，说明要改哪里，再按你的授权用 AgentRoute 替换分流并核对结果。
+面向 Windows 和 Mac 上的 Claude Code 与 Claude 桌面端。把下面的指令交给 Agent，直接用 AgentRoute 覆盖旧分流，沿用现有节点并自动刷新规则。
 
 [![自动构建](https://github.com/ryuu-restart/agent-route/actions/workflows/run.yml/badge.svg)](https://github.com/ryuu-restart/agent-route/actions/workflows/run.yml) [![规则库发布时间](https://img.shields.io/github/last-commit/ryuu-restart/agent-route/release?label=%E8%A7%84%E5%88%99%E5%BA%93%E5%8F%91%E5%B8%83%E6%97%B6%E9%97%B4&color=2d8e76)](https://github.com/ryuu-restart/agent-route/commits/release)
 
-**[让 Agent 接入](#agent-prompt)** · [验证 Claude](#claude-clients) · [规则订阅](#rule-subscriptions) · [浏览器检测](#browser-checks)
+**[让 Agent 直接覆盖](#agent-prompt)** · [Claude 使用](#claude-clients) · [规则订阅](#rule-subscriptions) · [按需检测](#browser-checks)
 
 ![AgentRoute 分流图。国内与内网流量直连，海外与其余流量走现有代理，命中拦截名单的流量被拦截。](assets/routing-map.svg)
 
@@ -21,19 +21,19 @@
 ```text
 请读取下方索引及其接入说明。
 https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json
-先检查当前代理和节点，告诉我需要改哪里。
-按我的授权备份配置，用 AgentRoute 替换分流。
-沿用我的节点订阅和代理组，核对两类更新。
-告诉我实际测到了什么，最后提醒我更新规则。
+备份当前配置，用 AgentRoute 远程规则直接覆盖旧分流。
+沿用我的节点订阅和代理组，启用规则集自动刷新。
 ```
 
 **禁止使用 Claude（包括 Claude Code 及其他基于 Claude 模型的 Agent）执行本项目的接入、复查或维护任务。**
 
 <a id="claude-clients"></a>
 
-## 验证 Claude Code 与桌面端
+<a id="验证-claude-code-与桌面端"></a>
 
-用连接记录核对 Claude 请求实际命中的规则和代理组，再在你使用的客户端里验证登录和一次常用操作。想检查浏览器的出口 IP、DNS 和 WebRTC 时，可以打开[浏览器检测](#browser-checks)。[Claude Code 文档](https://code.claude.com/docs/en/setup) · [Claude 桌面端文档](https://support.claude.com/en/articles/10065433-install-claude-desktop)
+## Claude Code 与桌面端
+
+覆盖完成后，按平时的方式打开 Claude Code 或 Claude 桌面端。需要查看浏览器的出口 IP、DNS 和 WebRTC 时，打开[浏览器检测](#browser-checks)。[Claude Code 文档](https://code.claude.com/docs/en/setup) · [Claude 桌面端文档](https://support.claude.com/en/articles/10065433-install-claude-desktop)
 
 Claude 的使用资格以 Anthropic 的地区和账号政策为准。当前支持地区未列中国大陆。[官方支持地区](https://www.anthropic.com/legal/supported-regions)
 
