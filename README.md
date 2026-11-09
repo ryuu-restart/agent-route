@@ -8,7 +8,7 @@ AgentRoute 发布可供各平台代理客户端使用的分流规则和索引。
 
 [![自动构建](https://github.com/ryuu-restart/agent-route/actions/workflows/run.yml/badge.svg)](https://github.com/ryuu-restart/agent-route/actions/workflows/run.yml) [![规则库发布时间](https://img.shields.io/github/last-commit/ryuu-restart/agent-route/release?label=%E8%A7%84%E5%88%99%E5%BA%93%E5%8F%91%E5%B8%83%E6%97%B6%E9%97%B4&color=2d8e76)](https://github.com/ryuu-restart/agent-route/commits/release)
 
-**[规则与订阅](#rule-subscriptions)** · [交给 Agent](#agent-prompt) · [Claude 使用](#claude-clients) · [按需检测](#browser-checks)
+**[规则与订阅](#rule-subscriptions)** · [交给 Agent](#agent-prompt) · [按需检测](#browser-checks)
 
 ![AgentRoute 规则动作示意。国内与内网规则对应直连，海外规则对应代理，广告规则对应拦截。](assets/routing-map.svg)
 
@@ -52,13 +52,6 @@ https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json
 ```
 
 **禁止使用 Claude（包括 Claude Code 及其他基于 Claude 模型的 Agent）执行本项目的接入、复查或维护任务。**
-
-<a id="claude-clients"></a>
-<a id="验证-claude-code-与桌面端"></a>
-
-## Claude Code 与桌面端
-
-Claude 的使用资格以 Anthropic 的地区和账号政策为准。当前支持地区未列中国大陆。[官方支持地区](https://www.anthropic.com/legal/supported-regions) · [Claude Code 文档](https://code.claude.com/docs/en/setup) · [Claude 桌面端文档](https://support.claude.com/en/articles/10065433-install-claude-desktop)
 
 <a id="browser-checks"></a>
 
