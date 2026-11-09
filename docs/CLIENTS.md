@@ -1,6 +1,8 @@
-# 客户端适配原则
+# 规则格式与客户端参考
 
-默认规则接入见 [AGENTS](../AGENTS.md)。使用者的 Agent 按目标设备实际运行的客户端和核心版本选择格式与覆盖入口。
+<a id="客户端适配原则"></a>
+
+[AGENTS](../AGENTS.md) 提供规则入口和操作边界。具体接法由使用者的 Agent 根据现有配置和实际客户端版本决定。
 
 <a id="scope"></a>
 
@@ -10,7 +12,7 @@
 
 | 目标 | 做法与结论范围 |
 | --- | --- |
-| Windows 或 Mac 的现有客户端接入规则 | 默认范围。直接替换当前客户端的业务分流。分流复查和浏览器检测按需进行 |
+| 现有代理客户端接入规则 | 使用者的 Agent 按客户端能力和用户目标选择规则格式与接入方案 |
 | 明确要求完整设备接入 | 按 [TUN 前置检查](#tun-required)和[逐项验收](DNS-WEBRTC.md#acceptance)验证获准的流量、DNS、WebRTC 和持久化 |
 | VPS 只作节点 | 在电脑上负责分流的客户端接入。VPS 继续作为原有代理出口 |
 | 获准在服务器或网关上接入 | 改实际执行分流的配置。结论覆盖该核心接管的流量，直连使用该服务器或网关的出站网络 |
@@ -42,33 +44,33 @@ TUN 和系统代理可以同时开。这时网页可能走系统代理、WebRTC 
 
 `<规则>` 为 private、reject、proxy、direct、cn-ip；地址前缀为 `https://raw.githubusercontent.com/ryuu-restart/agent-route/release/`。格式版本是实际兼容要求，不是文档装饰。旧格式公开地址继续保留，但新接入优先选择索引中的标准资源。来源是镜像或自建转换时，内容等效且刷新正常就保留，报告注明未核对发布代。
 
-默认替换生效的业务规则、旧业务例外和旧兜底。适用的项目规则按 **private → reject → proxy → direct → cn-ip** 排列。内网和国内类用直连策略，拦截类用拦截策略，海外和其余流量用用户现有代理组。索引中的用户例外顺序适用于明确保留例外的接入范围。
+索引给出项目规则的动作和建议顺序 **private → reject → proxy → direct → cn-ip**。内网与国内规则的动作是直连，广告规则的动作是拦截，海外规则的动作是代理。实际优先级、现有规则与最终去向由使用者的 Agent 按授权决定。
 
-把节点连接、引导解析、LAN、DNS 和核心自有地址所需的技术规则放在项目规则之前。核对真实 FakeIP 池与 TUN 前缀，避免当作真实 LAN 或中国 IP 匹配。只停用旧业务规则专用的资源引用。DNS 仍依赖的资源单独核实，无法安全分离时注明旧来源的剩余用途和限制。
+接入时保留节点连接、引导解析、LAN、DNS 和核心自有地址所需的技术路径。核对真实 FakeIP 池与 TUN 前缀，避免当作真实 LAN 或中国 IP 匹配。
 
 `private` 为通用内网域名，`direct` 只含域名，`cn-ip` 只含公网中国 IPv4 / IPv6。保留精确域名和后缀的区别。域名进入中国 IP 兜底时须核对整组真实地址，混合国内外答案走代理兜底。Mihomo 的 `no-resolve` 跳过本条触发的解析，前序规则已经解析的地址仍可能命中。无法保证的域名使用代理兜底，按[受限接入](#limited-integration)说明适用范围。sing-box 的 non-cn-ip 辅助集用于 DNS 判断，具体实现按版本确认。[Mihomo 匹配说明](https://wiki.metacubex.one/en/config/rules/#no-resolve)
 
-## 订阅适配
+<a id="订阅适配"></a>
 
-每个客户端的订阅入口供 Agent 读取。入口指定客户端、索引和规则格式。Agent 用索引中的远程地址配置客户端原生刷新，并通过实际配置管理器完成持久覆盖。建议规则集按索引每 24 小时刷新。机场若提供整份配置，节点刷新仍会收到其中的旧规则文本。持久覆盖应在每次生成生效配置时替换旧分流，并停用其专用规则集来源。
+## 订阅格式
+
+给 Agent 的入口包含规则索引和对应的格式。原生规则地址在索引的 `datasets[].resources` 中，建议刷新间隔为 24 小时。入口中的 `routing_mode` 和 `final_action` 供 Agent 参考，实际方案以用户目标和客户端能力为准。
 
 ### Mihomo
 
-实际使用 Mihomo 内核的 Clash 客户端选此入口，例如 Clash Verge Rev 和 FlClash。旧版 Clash 按实际版本确认远程规则集、对应规则类型和持久覆盖能力。[Clash Verge Rev](https://github.com/clash-verge-rev/clash-verge-rev) · [FlClash](https://github.com/chen08209/FlClash)
-
-从索引取 `mihomo` 资源，使用 HTTP `rule-providers` 及对应数据集的 `mihomo_behavior`，按当前核心设置刷新间隔。通过客户端的持久覆盖替换 `rules`，引用项目规则集并以 `MATCH` 指向现有代理组。[Mihomo 规则集](https://wiki.metacubex.one/config/rule-providers/)
+索引的 `mihomo` 资源是原生 YAML 规则集，`mihomo_behavior` 标明域名或 IP 类型。Clash Verge Rev 和 FlClash 等客户端以实际运行的内核为准。[Mihomo 规则集](https://wiki.metacubex.one/config/rule-providers/) · [Clash Verge Rev](https://github.com/clash-verge-rev/clash-verge-rev) · [FlClash](https://github.com/chen08209/FlClash)
 
 ### Surge
 
-从索引取 `surge` 资源，在可持久编辑的 `[Rule]` 中使用远程 `RULE-SET` 与刷新间隔，`FINAL` 指向现有代理策略。使用模块时先确认是否能替换旧规则。仅能在前面插入的模块按受限接入处理。[Surge 规则集](https://manual.nssurge.com/rules/ruleset.html) · [模块](https://manual.nssurge.com/profile/module.html)
+索引的 `surge` 资源是 RULE-SET 文本，策略由引用规则集的客户端配置指定。[Surge 规则集](https://manual.nssurge.com/rules/ruleset.html)
 
 ### Shadowrocket
 
-小火箭（Shadowrocket）用此入口，读取 `surge` 格式的规则文件。按当前版本支持的规则集引用、刷新选项和最终策略，在可持久编辑的配置中替换业务规则。具体字段按 App 能力核实。
+小火箭（Shadowrocket）入口指向同一组 `surge` 格式文件。引用和刷新能力以实际 App 版本为准。
 
 ### sing-box
 
-从索引取 `sing-box` 资源。按实际版本在 `route.rule_set` 使用远程 source 规则集及刷新间隔，替换 `route.rules` 中的业务匹配，将 `route.final` 指向现有代理出站。保留实际接管所需的技术动作与 DNS 依赖。[sing-box 规则集](https://sing-box.sagernet.org/configuration/rule-set/)
+索引的 `sing-box` 资源是 source 格式的 JSON 规则集。[sing-box 规则集](https://sing-box.sagernet.org/configuration/rule-set/)
 
 <a id="baseline"></a>
 
@@ -82,11 +84,11 @@ TUN 和系统代理可以同时开。这时网页可能走系统代理、WebRTC 
 
 ## 通用检查点
 
-执行 Agent 根据现场能力选择覆盖方式。默认规则接入按[交付与恢复](../AGENTS.md#交付与恢复)处理，需要完整设备接入时按[逐项验收](DNS-WEBRTC.md#acceptance)判定。发现项目准则或示例有矛盾时，可使用[反馈入口](../AGENTS.md#issue-feedback)。
+以下内容供使用者的 Agent 按需参考。配置交付按[交付与恢复](../AGENTS.md#交付与恢复)说明，完整设备接入按[逐项验收](DNS-WEBRTC.md#acceptance)判定。发现规则或示例问题时，可使用[反馈入口](../AGENTS.md#issue-feedback)。
 
 | 检查点 | 必须保持的准则 |
 | --- | --- |
-| 规则替换与顺序 | 从生效配置移出旧业务规则和专用规则源，刷新后可按需复查。明确保留域名例外时，按同一域名条件保留其解析去向，表达不了时说明限制并由使用者选择 |
+| 规则与顺序 | 以用户授权确定如何处理现有规则和优先级。明确保留域名例外时，按同一域名条件保留其解析去向 |
 | 配置来源与持久化 | 区分原始配置、覆写、当前配置档和运行配置；按实际版本核实谁拥有最终值，订阅刷新后仍须成立 |
 | DNS 全阶段路径 | 首次、备用、再次解析及出站绑定的解析器都遵守域名类别目标；业务直连不自动授权 DNS 直连，节点域名不经该节点所在的代理解析，本地解析标签不证明实际上游。域名类别来自域名规则（含用户例外），IP 规则和中国 IP 兜底不改变它 |
 | 域名与核心自有地址 | 已知域名应按域名规则判断；裸 IP、嗅探和 FakeIP 是不同证据。FakeIP 池、TUN 接口等核心自有地址按运行配置的实际值核对，各地址族的来源可能不同，都不能命中真实 LAN 或中国 IP 兜底 |
@@ -108,7 +110,7 @@ TUN 和系统代理可以同时开。这时网页可能走系统代理、WebRTC 
 
 **按需复查。** 用户要求检查覆盖持久性时，区分持久配置来源、生成或托管的运行副本和核心状态。在重新生成或刷新节点订阅后，回读运行配置，查看旧规则及专用来源是否恢复，并核对规则集能否独立刷新。
 
-**约束。** 使用实际配置管理器的持久覆盖入口，保留节点订阅和恢复前像。只有中间副本可写、覆盖仅支持追加或受管配置权限不足时，按受限接入处理。需要换配置来源或改自建订阅生成端时，说明影响并取得用户选择。节点变化后，重新核对节点连接和引导解析。
+**约束。** 需要持久化时，使用实际配置管理器支持的入口，保留节点订阅和恢复前像。配置权限不足或无法满足用户目标时，按受限接入处理。需要换配置来源或改自建订阅生成端时，说明影响并取得用户选择。
 
 **做法提示。** 可先确认配置是本地编辑、订阅生成、托管，还是由客户端每次连接时按自身骨架重新生成；再找该版本支持的持久覆写、扩展或模块机制，核对它是合并还是整段替换，以及实际规则顺序。具体使用 GUI、API 还是命令行由执行 Agent 按现场能力选择，不绑定某个按钮。版本案例见[可选证据](CLIENT-EVIDENCE.md#运行时加载与持久化的区别)。
 
@@ -118,7 +120,7 @@ TUN 和系统代理可以同时开。这时网页可能走系统代理、WebRTC 
 
 托管配置或模块可能限制可用策略和排序。先按官方资料与现场检查确认限制；若无法保持规则语义，说明缺失能力和替代方案，取得用户选择。没有可靠方案或用户未接受限制时停止相关修改。
 
-用户接受受限接入时，说明实际接入的资源、主配置承接的行为和缺失项。旧规则继续生效或刷新时，明确标为覆盖未完成。完整设备接入还需验证适用的 TUN、DNS 和 WebRTC 目标。[Surge 模块手册](https://manual.nssurge.com/profile/module.html)提供了策略和排序受限的一个例子。
+用户接受受限接入时，说明实际接入的资源、主配置承接的行为和缺失项。用户要求替换且旧规则仍生效时，标明覆盖未完成。完整设备接入还需验证适用的 TUN、DNS 和 WebRTC 目标。[Surge 模块手册](https://manual.nssurge.com/profile/module.html)提供了策略和排序受限的一个例子。
 
 ## 更新与验证责任
 

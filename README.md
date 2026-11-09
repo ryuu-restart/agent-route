@@ -2,64 +2,63 @@
 
 <a id="about"></a>
 
-**把 Claude 的网络配置交给 Agent。**
+**给现有代理客户端用的自动更新分流规则。**
 
-面向 Windows 和 Mac 上的 Claude Code 与 Claude 桌面端。把下面的指令交给 Agent，直接用 AgentRoute 覆盖旧分流，沿用现有节点并自动刷新规则。
+AgentRoute 发布可供各平台代理客户端使用的分流规则和索引。你的 Agent 根据实际客户端、内核和现有配置选择格式与接法。
 
 [![自动构建](https://github.com/ryuu-restart/agent-route/actions/workflows/run.yml/badge.svg)](https://github.com/ryuu-restart/agent-route/actions/workflows/run.yml) [![规则库发布时间](https://img.shields.io/github/last-commit/ryuu-restart/agent-route/release?label=%E8%A7%84%E5%88%99%E5%BA%93%E5%8F%91%E5%B8%83%E6%97%B6%E9%97%B4&color=2d8e76)](https://github.com/ryuu-restart/agent-route/commits/release)
 
-**[让 Agent 直接覆盖](#agent-prompt)** · [Claude 使用](#claude-clients) · [规则订阅](#rule-subscriptions) · [按需检测](#browser-checks)
+**[规则与订阅](#rule-subscriptions)** · [交给 Agent](#agent-prompt) · [Claude 使用](#claude-clients) · [按需检测](#browser-checks)
 
-![AgentRoute 分流图。国内与内网流量直连，海外与其余流量走现有代理，命中拦截名单的流量被拦截。](assets/routing-map.svg)
+![AgentRoute 规则动作示意。国内与内网规则对应直连，海外规则对应代理，广告规则对应拦截。](assets/routing-map.svg)
+
+<a id="rule-subscriptions"></a>
+<a id="按客户端拿规则"></a>
+
+## 规则与订阅
+
+**规则索引**汇总五类规则的地址、格式、条目数和建议刷新间隔，供 Agent 选择资源。[公开索引](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json)
+
+**给 Agent 的格式入口**适合已经知道客户端或内核的用户。每个入口指向同一份规则索引及对应格式。
+
+[Clash 系列（Mihomo 内核）](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/mihomo.json) · [小火箭（Shadowrocket）](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/shadowrocket.json) · [Surge](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/surge.json) · [sing-box](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/sing-box.json)
+
+**客户端规则集**是实际供客户端加载和刷新的远程文件。按实际内核选格式。
+
+| 规则 | Mihomo | 小火箭 / Surge | sing-box |
+| --- | --- | --- | --- |
+| 内网直连 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/private.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/private.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/private.json) |
+| 广告拦截 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/reject.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/reject.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/reject.json) |
+| 海外代理 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/proxy.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/proxy.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/proxy.json) |
+| 国内直连 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/direct.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/direct.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/direct.json) |
+| 中国 IP 兜底 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/cn-ip.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/cn-ip.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/cn-ip.json) |
+
+<a id="记得经常更新"></a>
+
+规则校验通过后自动发布到 `release`。客户端按自己支持的方式刷新，索引中的建议间隔为 24 小时。
 
 <a id="agent-prompt"></a>
 
 ## 让我的 Agent 接入
 
-把下面这段交给能操作这台电脑的 Agent。
+把下面这段交给负责接入的 Agent。
 
 ```text
-请读取下方索引及其接入说明。
+请读取 AgentRoute 的规则索引和接入说明。
 https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json
-备份当前配置，用 AgentRoute 远程规则直接覆盖旧分流。
-沿用我的节点订阅和代理组，启用规则集自动刷新。
+按我的目标和现用客户端版本选择接入方案。
+使用对应格式的远程规则，保留我的节点和订阅。
+按我的授权操作，说明改动和恢复方法。
 ```
 
 **禁止使用 Claude（包括 Claude Code 及其他基于 Claude 模型的 Agent）执行本项目的接入、复查或维护任务。**
 
 <a id="claude-clients"></a>
-
 <a id="验证-claude-code-与桌面端"></a>
 
 ## Claude Code 与桌面端
 
-覆盖完成后，按平时的方式打开 Claude Code 或 Claude 桌面端。需要查看浏览器的出口 IP、DNS 和 WebRTC 时，打开[浏览器检测](#browser-checks)。[Claude Code 文档](https://code.claude.com/docs/en/setup) · [Claude 桌面端文档](https://support.claude.com/en/articles/10065433-install-claude-desktop)
-
-Claude 的使用资格以 Anthropic 的地区和账号政策为准。当前支持地区未列中国大陆。[官方支持地区](https://www.anthropic.com/legal/supported-regions)
-
-<a id="rule-subscriptions"></a>
-
-## 按客户端拿规则
-
-把对应的入口交给 Agent。它会识别客户端的覆盖方式，并接入对应格式的原生远程规则。
-
-[Clash 系列（Mihomo 内核）](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/mihomo.json) · [小火箭（Shadowrocket）](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/shadowrocket.json) · [Surge](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/surge.json) · [sing-box](https://raw.githubusercontent.com/ryuu-restart/agent-route/master/subscriptions/sing-box.json)
-
-使用 Mihomo 内核的 Clash Verge Rev 和 FlClash 等客户端选 Clash 系列入口。上方链接供 Agent 读取，客户端自动刷新下表的规则集。
-
-| 规则 | Clash（Mihomo 内核） | 小火箭 / Surge | sing-box |
-| --- | --- | --- | --- |
-| 内网 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/private.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/private.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/private.json) |
-| 拦截 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/reject.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/reject.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/reject.json) |
-| 海外代理 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/proxy.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/proxy.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/proxy.json) |
-| 国内直连 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/direct.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/direct.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/direct.json) |
-| 中国 IP 兜底 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/cn-ip.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/cn-ip.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/cn-ip.json) |
-
-按实际核心选一列，使用持久覆盖将业务分流替换为这些规则。内网和国内流量按规则直连，海外和其余流量使用现有代理组，命中拦截名单的流量被拦截。覆盖条件和所需的技术规则见[接入说明](AGENTS.md)与[客户端适配](docs/CLIENTS.md#订阅适配)。
-
-<a id="记得经常更新"></a>
-
-规则持续发布到 `release`。请开启客户端规则集自动刷新，或定期手动刷新。
+Claude 的使用资格以 Anthropic 的地区和账号政策为准。当前支持地区未列中国大陆。[官方支持地区](https://www.anthropic.com/legal/supported-regions) · [Claude Code 文档](https://code.claude.com/docs/en/setup) · [Claude 桌面端文档](https://support.claude.com/en/articles/10065433-install-claude-desktop)
 
 <a id="browser-checks"></a>
 
