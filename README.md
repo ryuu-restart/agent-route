@@ -8,7 +8,7 @@ AgentRoute 发布可供各平台代理客户端使用的分流规则和索引。
 
 [![自动构建](https://github.com/ryuu-restart/agent-route/actions/workflows/run.yml/badge.svg)](https://github.com/ryuu-restart/agent-route/actions/workflows/run.yml) [![规则库发布时间](https://img.shields.io/github/last-commit/ryuu-restart/agent-route/release?label=%E8%A7%84%E5%88%99%E5%BA%93%E5%8F%91%E5%B8%83%E6%97%B6%E9%97%B4&color=2d8e76)](https://github.com/ryuu-restart/agent-route/commits/release)
 
-**[规则与订阅](#rule-subscriptions)** · [交给 Agent](#agent-prompt) · [按需检测](#browser-checks)
+**[规则与订阅](#rule-subscriptions)** · [交给 Agent](#agent-prompt) · [浏览器检测](#browser-checks)
 
 ![AgentRoute 规则动作示意。国内与内网规则对应直连，海外规则对应代理，广告规则对应拦截。](assets/routing-map.svg)
 
@@ -44,11 +44,22 @@ AgentRoute 发布可供各平台代理客户端使用的分流规则和索引。
 把下面这段交给负责接入的 Agent。
 
 ```text
-请读取 AgentRoute 的规则索引和接入说明。
+请先读取 AgentRoute 的接入说明和规则索引。
+https://raw.githubusercontent.com/ryuu-restart/agent-route/master/AGENTS.md
 https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json
-按我的目标和现用客户端版本选择接入方案。
-使用对应格式的远程规则，保留我的节点和订阅。
-按我的授权操作，说明改动和恢复方法。
+
+按我的目标、授权和现用客户端版本选择对应的远程规则。改动前备份，保留我的节点、订阅和用户例外。
+接入后核对规则加载和实际分流，告诉我改动和恢复方法。
+
+请用我平时上网的桌面浏览器逐项做 IP、DNS 和 WebRTC 检测，交付三个链接和各项结果。无法检测时逐项注明未验证，给我链接自测。
+https://browserleaks.com/ip
+https://browserleaks.com/dns
+https://browserleaks.com/webrtc
+
+如果我用桌面 Chrome，请说明 WebRTC Network Limiter 的作用和当前状态。
+扩展和等效策略均未生效时，给我官方入口并问我是否安装或启用。状态无法核实时，给我官方入口并注明待核实。
+安装、启用或修改浏览器设置前先取得我的同意。
+https://chromewebstore.google.com/detail/webrtc-network-limiter/npeicpdbkakmehahjeeohfdhnlpdklia
 ```
 
 **禁止使用 Claude（包括 Claude Code 及其他基于 Claude 模型的 Agent）执行本项目的接入、复查或维护任务。**
@@ -58,6 +69,8 @@ https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json
 ## 浏览器检测
 
 用平时上网的浏览器打开 [IP 检测](https://browserleaks.com/ip)、[DNS 检测](https://browserleaks.com/dns)、[WebRTC 检测](https://browserleaks.com/webrtc)。结果只覆盖当前浏览器的本次探测。
+
+桌面 Chrome 用户可选用 WebRTC Network Limiter 限制 WebRTC 的网络路径。扩展可能影响网页音视频，调整后可复测 WebRTC 并试用常用的通话功能。[Chrome 应用商店](https://chromewebstore.google.com/detail/webrtc-network-limiter/npeicpdbkakmehahjeeohfdhnlpdklia)
 
 <a id="反馈问题"></a>
 

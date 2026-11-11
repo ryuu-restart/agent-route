@@ -31,10 +31,13 @@ AgentRoute 维护上游规则、原生格式、索引、校验和自动发布。
 
 <a id="4-检测并处理-dns"></a>
 <a id="5-检测并处理-webrtc"></a>
+<a id="按需检测与更新"></a>
 
-## 按需检测与更新
+## 浏览器检测与更新
 
-客户要求检测时，用其常用浏览器打开 [IP 检测](https://browserleaks.com/ip)、[DNS 检测](https://browserleaks.com/dns)、[WebRTC 检测](https://browserleaks.com/webrtc)。这些页面只展示本次浏览器探测。页面打不开、超时或没有结果时记为未测到。无法操作目标浏览器时，把链接交给客户自行打开。
+桌面接入交付时，主动提供三个检测入口。获准后用用户常用的浏览器逐项检测并报告结果。无法检测、页面超时或无结果的项目逐项标为未验证，用户可按链接自测。结果只覆盖当前浏览器的本次探测。[IP 检测](https://browserleaks.com/ip) · [DNS 检测](https://browserleaks.com/dns) · [WebRTC 检测](https://browserleaks.com/webrtc)
+
+用户使用桌面 Chrome 时，主动说明 WebRTC Network Limiter 的用途和实际状态。它能限制 WebRTC 的网络路径，可能影响网页音视频。扩展和等效策略均未生效时，给出官方入口并询问是否安装或启用。状态无法核实时，注明待核实并提供官方入口。安装、启用或调整浏览器设置前先取得用户同意，变更后在同一浏览器配置档复测 WebRTC。[Chrome 应用商店](https://chromewebstore.google.com/detail/webrtc-network-limiter/npeicpdbkakmehahjeeohfdhnlpdklia)
 
 最后提醒一句「规则持续更新，请开启客户端自动刷新，或定期手动刷新。」
 

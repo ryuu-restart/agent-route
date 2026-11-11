@@ -455,6 +455,20 @@ class AgentGuidanceTests(unittest.TestCase):
                 links = set(re.findall(r'\]\((https://browserleaks\.com/[^)]+)\)', text))
                 self.assertEqual(links, expected)
 
+    def test_copied_setup_prompt_includes_browser_follow_up(self):
+        readme = (ROOT / 'README.md').read_text(encoding='utf-8')
+        prompt_section = readme.partition('<a id="agent-prompt"></a>')[2]
+        prompt = prompt_section.partition('```text\n')[2].partition('\n```')[0]
+        self.assertIn(BASE_URL.replace('/release/', '/master/') + 'AGENTS.md', prompt)
+        self.assertIn(BASE_URL + 'index.json', prompt)
+        self.assertEqual(set(re.findall(r'^https://browserleaks\.com/\S+$', prompt, re.M)), {
+            'https://browserleaks.com/ip', 'https://browserleaks.com/dns', 'https://browserleaks.com/webrtc',
+        })
+        self.assertIn('未验证', prompt)
+        self.assertIn('WebRTC Network Limiter', prompt)
+        self.assertIn('https://chromewebstore.google.com/detail/webrtc-network-limiter/', prompt)
+        self.assertIn('先取得我的同意', prompt)
+
     def test_acceptance_standard_keeps_every_item_and_its_evidence_rule(self):
         # The advanced acceptance section defines full-device results. An item that loses
         # its evidence requirement lets a configuration screenshot pass as a verified path.
