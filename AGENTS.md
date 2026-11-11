@@ -35,9 +35,11 @@ AgentRoute 维护上游规则、原生格式、索引、校验和自动发布。
 
 ## 浏览器检测与更新
 
-桌面接入交付时，主动提供三个检测入口。获准后用用户常用的浏览器逐项检测并报告结果。无法检测、页面超时或无结果的项目逐项标为未验证，用户可按链接自测。结果只覆盖当前浏览器的本次探测。[IP 检测](https://browserleaks.com/ip) · [DNS 检测](https://browserleaks.com/dns) · [WebRTC 检测](https://browserleaks.com/webrtc)
+WebRTC 防护是本次接入范围内每个浏览器的必做项。按浏览器版本把官方安装和配置教程、要选的设置及恢复方法交给使用者，由使用者在实际使用的配置档中操作。提示使用者记录原设置和核对常用音视频功能。
 
-用户使用桌面 Chrome 时，主动说明 WebRTC Network Limiter 的用途和实际状态。它能限制 WebRTC 的网络路径，可能影响网页音视频。扩展和等效策略均未生效时，给出官方入口并询问是否安装或启用。状态无法核实时，注明待核实并提供官方入口。安装、启用或调整浏览器设置前先取得用户同意，变更后在同一浏览器配置档复测 WebRTC。[Chrome 应用商店](https://chromewebstore.google.com/detail/webrtc-network-limiter/npeicpdbkakmehahjeeohfdhnlpdklia)
+支持 WebRTC Network Limiter 的浏览器，指导使用者安装、启用扩展并设为禁用非代理 UDP（`disable_non_proxied_udp`）。0.2.1.4 的选项名为「Use my proxy server (if present)」。已有扩展的浏览器也要核对并按此设置。无法安装时，提供该浏览器官方支持的等效配置教程。查不到可核实的做法或操作受限时，标为待配置并写明原因。[官方扩展](https://chromewebstore.google.com/detail/webrtc-network-limiter/npeicpdbkakmehahjeeohfdhnlpdklia) · [各浏览器官方资料](docs/DNS-WEBRTC.md#webrtc-methods)
+
+交付时提供三个检测入口，指导使用者配置后在同一配置档逐项自测。按浏览器核对实际生效的设置和检测结果，结果可由使用者回传或在获准范围内复查。无法核实的项目逐项标为未验证。[IP 检测](https://browserleaks.com/ip) · [DNS 检测](https://browserleaks.com/dns) · [WebRTC 检测](https://browserleaks.com/webrtc)
 
 最后提醒一句「规则持续更新，请开启客户端自动刷新，或定期手动刷新。」
 
