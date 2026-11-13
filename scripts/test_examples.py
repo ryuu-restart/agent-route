@@ -424,6 +424,12 @@ class TemplateTests(unittest.TestCase):
 
 
 class AgentGuidanceTests(unittest.TestCase):
+    BROWSER_CHECK_LINKS = [
+        ('IP 检测', 'https://ippure.com/'),
+        ('DNS 检测', 'https://ippure.com/DNS-Leak-Detect.html'),
+        ('WebRTC 检测', 'https://ippure.com/Browser-WebRTC-Leak-Detect.html'),
+    ]
+
     def test_subscription_links_select_the_correct_native_format(self):
         master = BASE_URL.replace('/release/', '/master/')
         clients = {'mihomo': 'mihomo', 'surge': 'surge', 'shadowrocket': 'surge', 'sing-box': 'sing-box'}
@@ -447,13 +453,11 @@ class AgentGuidanceTests(unittest.TestCase):
                 self.assertRegex(adapters, rf'(?im)^### {re.escape(client)}$')
 
     def test_browser_checks_link_to_the_three_test_pages(self):
-        expected = {'https://browserleaks.com/ip', 'https://browserleaks.com/dns',
-                    'https://browserleaks.com/webrtc'}
         for name in ('README.md', 'AGENTS.md'):
             with self.subTest(name=name):
                 text = (ROOT / name).read_text(encoding='utf-8')
-                links = set(re.findall(r'\]\((https://browserleaks\.com/[^)]+)\)', text))
-                self.assertEqual(links, expected)
+                links = re.findall(r'\[((?:IP|DNS|WebRTC) 检测)\]\(([^)]+)\)', text)
+                self.assertEqual(links, self.BROWSER_CHECK_LINKS)
 
     def test_copied_setup_prompt_includes_browser_follow_up(self):
         readme = (ROOT / 'README.md').read_text(encoding='utf-8')
@@ -461,9 +465,10 @@ class AgentGuidanceTests(unittest.TestCase):
         prompt = prompt_section.partition('```text\n')[2].partition('\n```')[0]
         self.assertIn(BASE_URL.replace('/release/', '/master/') + 'AGENTS.md', prompt)
         self.assertIn(BASE_URL + 'index.json', prompt)
-        self.assertEqual(set(re.findall(r'^https://browserleaks\.com/\S+$', prompt, re.M)), {
-            'https://browserleaks.com/ip', 'https://browserleaks.com/dns', 'https://browserleaks.com/webrtc',
-        })
+        self.assertEqual(
+            re.findall(r'^https://ippure\.com/\S*$', prompt, re.M),
+            [url for _, url in self.BROWSER_CHECK_LINKS],
+        )
         self.assertIn('未验证', prompt)
         self.assertIn('每个浏览器都必须完成 WebRTC 防护', prompt)
         self.assertIn('官方安装和配置教程', prompt)

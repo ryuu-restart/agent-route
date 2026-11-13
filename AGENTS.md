@@ -39,7 +39,7 @@ WebRTC 防护是本次接入范围内每个浏览器的必做项。按浏览器�
 
 支持 WebRTC Network Limiter 的浏览器，指导使用者安装、启用扩展并设为禁用非代理 UDP（`disable_non_proxied_udp`）。0.2.1.4 的选项名为「Use my proxy server (if present)」。已有扩展的浏览器也要核对并按此设置。无法安装时，提供该浏览器官方支持的等效配置教程。查不到可核实的做法或操作受限时，标为待配置并写明原因。[官方扩展](https://chromewebstore.google.com/detail/webrtc-network-limiter/npeicpdbkakmehahjeeohfdhnlpdklia) · [各浏览器官方资料](docs/DNS-WEBRTC.md#webrtc-methods)
 
-交付时提供三个检测入口，指导使用者配置后在同一配置档逐项自测。按浏览器核对实际生效的设置和检测结果，结果可由使用者回传或在获准范围内复查。无法核实的项目逐项标为未验证。[IP 检测](https://browserleaks.com/ip) · [DNS 检测](https://browserleaks.com/dns) · [WebRTC 检测](https://browserleaks.com/webrtc)
+交付时提供三个检测入口，指导使用者配置后在同一配置档逐项自测。按浏览器核对实际生效的设置和检测结果，结果可由使用者回传或在获准范围内复查。无法核实的项目逐项标为未验证。[IP 检测](https://ippure.com/) · [DNS 检测](https://ippure.com/DNS-Leak-Detect.html) · [WebRTC 检测](https://ippure.com/Browser-WebRTC-Leak-Detect.html)
 
 最后提醒一句「规则持续更新，请开启客户端自动刷新，或定期手动刷新。」
 

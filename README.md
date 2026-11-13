@@ -35,9 +35,9 @@ https://chromewebstore.google.com/detail/webrtc-network-limiter/npeicpdbkakmehah
 https://github.com/ryuu-restart/agent-route/blob/master/docs/DNS-WEBRTC.md#webrtc-methods
 
 请交付三个检测链接，指导我配置后用同一配置档逐项做 IP、DNS 和 WebRTC 检测。按浏览器核对实际生效的设置和检测结果，未核实的项目注明未验证。
-https://browserleaks.com/ip
-https://browserleaks.com/dns
-https://browserleaks.com/webrtc
+https://ippure.com/
+https://ippure.com/DNS-Leak-Detect.html
+https://ippure.com/Browser-WebRTC-Leak-Detect.html
 ```
 
 ### 接下来会发生什么
@@ -65,7 +65,7 @@ https://browserleaks.com/webrtc
 
 其他浏览器按实际版本查阅适用的官方资料，完成可核实的等效配置。[各浏览器官方资料](docs/DNS-WEBRTC.md#webrtc-methods)
 
-设置后，在每个目标浏览器的实际使用配置档里打开三个检测页，并检查常用的音视频功能。把结果发给 Agent，请它逐项帮你判断。检测结果覆盖当前浏览器的本次探测。[IP 检测](https://browserleaks.com/ip) · [DNS 检测](https://browserleaks.com/dns) · [WebRTC 检测](https://browserleaks.com/webrtc)
+设置后，在每个目标浏览器的实际使用配置档里打开三个检测页，并检查常用的音视频功能。把结果发给 Agent，请它逐项帮你判断。检测结果覆盖当前浏览器的本次探测。[IP 检测](https://ippure.com/) · [DNS 检测](https://ippure.com/DNS-Leak-Detect.html) · [WebRTC 检测](https://ippure.com/Browser-WebRTC-Leak-Detect.html)
 
 <a id="rule-subscriptions"></a>
 <a id="按客户端拿规则"></a>
