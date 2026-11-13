@@ -49,8 +49,8 @@ https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json
 **同一个 Chrome 配置档，同一个节点。** 这次 FlClash + Chrome 试跑中，WebRTC 从 9 项中 3 项返回直连 IP，变为 9 项均未报告泄露。
 
 <picture>
-  <source media="(max-width: 767px)" srcset="assets/test-results-2026-11-12-mobile.svg" width="600" height="922">
-  <img src="assets/test-results-2026-11-12.svg" width="1200" height="684" alt="2026-11-12 接入前后对照，Chrome 本次 WebRTC 探测有改善。完整数据可展开下方文字版对照。">
+  <source media="(max-width: 767px)" srcset="assets/test-results-2026-11-12-mobile.svg">
+  <img src="assets/test-results-2026-11-12.svg" width="1200" alt="2026-11-12 接入前后对照，Chrome 本次 WebRTC 探测有改善。完整数据可展开下方文字版对照。">
 </picture>
 
 <details>
