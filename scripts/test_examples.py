@@ -489,13 +489,14 @@ class AgentGuidanceTests(unittest.TestCase):
         prompt_section = readme.partition('<a id="agent-prompt"></a>')[2]
         prompt = prompt_section.partition('```text\n')[2].partition('\n```')[0]
         self.assertIn(BASE_URL.replace('/release/', '/master/') + 'AGENTS.md', prompt)
-        self.assertIn(BASE_URL + 'index.json', prompt)
+        self.assertIn('及其中的规则索引', prompt)
         self.assertIn('未验证', prompt)
         self.assertIn('本机已安装的所有浏览器', prompt)
         self.assertRegex(prompt, r'在实际使用的配置档[^。\n]*自动安装并配置 WebRTC 防护')
         self.assertIn('IP、DNS、WebRTC 检测', prompt)
         guidance = (ROOT / 'AGENTS.md').read_text(encoding='utf-8')
-        # Installer, policy, fallback and test URLs remain mandatory in the guide
+        self.assertIn(BASE_URL + 'index.json', guidance)
+        # Index, installer, policy, fallback and test URLs remain mandatory in the guide
         # referenced by the short prompt, instead of being duplicated in both.
         self.assertIn('本机已安装的所有浏览器', guidance)
         self.assertIn('Agent 从官方商店补装缺失的扩展', guidance)
