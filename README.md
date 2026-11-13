@@ -2,7 +2,7 @@
 
 <a id="about"></a>
 
-**想用 Claude，但不想自己研究 YAML、DNS 和分流？把这段提示词交给 Codex，让它先看看你的现有配置。**
+**想用 Claude，但不想自己研究 YAML、DNS 和分流？把下面的提示词交给 Codex，让它替换旧规则、配置浏览器并验证结果。**
 
 AgentRoute 持续更新分流规则。沿用你的代理客户端和节点，由 AgentRoute 接管业务分流和默认兜底。Agent 会核对实际流量去向，并告诉你怎么恢复。
 
@@ -13,30 +13,29 @@ AgentRoute 持续更新分流规则。沿用你的代理客户端和节点，由
 
 ## 快速开始
 
-准备好现用的代理客户端和可用节点，把下面的提示词复制给 **Codex** 等具备本机操作权限的 Agent。
+准备好现用的代理客户端和可用节点，把下面的提示词复制给 **Codex** 等能操作本机文件和浏览器的 Agent。
 
 **禁止使用 Claude（包括 Claude Code 及其他基于 Claude 模型的 Agent）执行本项目的接入、复查或维护任务。**
 
 ```text
-请用 AgentRoute 替换现用客户端的业务分流和默认兜底。我想核对使用 Claude 时的实际分流。
+请把 AgentRoute 规则装到我现用的代理客户端，直接替换旧业务分流规则和默认兜底。请检查本机已安装的所有浏览器，补装并配好 WebRTC 防护。我授权你执行下面的操作、所需的客户端重载和一次现有节点订阅刷新。核对环境后直接执行。
 
 请先读取 AgentRoute 的接入说明和规则索引。
 https://raw.githubusercontent.com/ryuu-restart/agent-route/master/AGENTS.md
 https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json
 
-先只读检查现用的客户端、内核版本和生效配置。用简单的话说明你建议怎么改、有什么影响，等我确认后再动手。客户端只能追加规则时，请先停在方案阶段，说明覆盖未完成的原因。
+先检查现用客户端、内核版本和生效配置。客户端只能追加规则时，暂停代理规则改动，说明覆盖未完成的原因。
 
-确认后先备份配置，保留节点订阅、可用代理策略组和联网所需的技术规则。在订阅刷新后仍生效的配置入口停用旧业务规则、规则集引用和旧兜底，包括节点订阅、覆写或模块带入的规则。让 AgentRoute 接管业务分流，未匹配的流量走默认代理。
+先备份配置，保留节点订阅、可用代理策略组和联网所需的技术规则。在订阅刷新后仍生效的配置入口停用旧业务规则、规则集引用和旧兜底，包括节点订阅、覆写或模块带入的规则。让 AgentRoute 接管业务分流，未匹配的流量走默认代理。
 
-接入后回读生效配置，核对实际流量去向、默认代理出站和 Claude 相关域名的命中。获准刷新节点订阅后，再回读确认旧规则没有恢复。按接入说明核对获准范围内实际生效的 DNS 策略。告诉我覆盖和刷新复查的结果、备份位置、恢复方法及未验证项。
+接入后回读生效配置，核对实际流量去向、默认代理出站和 Claude 相关域名的命中。刷新节点订阅后，再回读确认旧规则没有恢复。按接入说明核对实际生效的 DNS 策略。
 
-本次接入范围内的每个浏览器都必须完成 WebRTC 防护。请按浏览器版本给我官方安装和配置教程，由我在实际使用的配置档中操作。
-支持 WebRTC Network Limiter 的浏览器，请指导我安装、启用扩展，并在扩展选项中选择 Use my proxy server (if present)，对应 disable_non_proxied_udp。已有扩展的浏览器也要核对并按此设置。
+逐个检查浏览器版本和我实际使用的配置档，记录原设置。支持 WebRTC Network Limiter 的浏览器，缺扩展就从官方商店安装，已有扩展就核对并修正设置。启用扩展并选择 Use my proxy server (if present)，对应 disable_non_proxied_udp。
 https://chromewebstore.google.com/detail/webrtc-network-limiter/npeicpdbkakmehahjeeohfdhnlpdklia
-无法安装这款扩展时，请给我该浏览器官方支持的等效配置教程。查不到可核实的做法时，注明该浏览器待配置并说明原因。
+无法安装这款扩展时，按浏览器版本应用官方支持的等效防护。系统或浏览器要求我本人确认时，把该步骤准备好，等我确认后继续配置和检测。缺少权限或没有可核实方案时，标为待配置并说明原因。继续处理其余项目。
 https://github.com/ryuu-restart/agent-route/blob/master/docs/DNS-WEBRTC.md#webrtc-methods
 
-请交付三个检测链接，指导我配置后用同一配置档逐项做 IP、DNS 和 WebRTC 检测。按浏览器核对实际生效的设置和检测结果，未核实的项目注明未验证。
+在每个浏览器实际使用的配置档里回读设置，并用以下三个页面完成 IP、DNS 和 WebRTC 检测。交付三个链接、规则覆盖和刷新复查结果、每个浏览器的配置和检测结果、备份位置及恢复方法。未核实的项目注明未验证。
 https://ippure.com/
 https://ippure.com/DNS-Leak-Detect.html
 https://ippure.com/Browser-WebRTC-Leak-Detect.html
@@ -44,18 +43,14 @@ https://ippure.com/Browser-WebRTC-Leak-Detect.html
 
 ### 接下来会发生什么
 
-1. **先看现状。** Agent 找到正在生效的配置，告诉你准备改哪里。
-2. **你确认后再替换。** Agent 先备份配置，沿用你的节点订阅，由 AgentRoute 接管业务分流。
-3. **逐项交付。** Agent 核对实际分流和节点订阅刷新后生效的规则，告诉你怎么恢复，并指引你完成浏览器设置和自测。
+1. **替换旧规则。** Agent 备份现用配置，保留节点订阅，用 AgentRoute 接管业务分流和默认兜底。
+2. **配好浏览器。** Agent 检查本机所有已安装的浏览器，在支持的浏览器里补装或配置扩展。遇到必须本人确认的提示时，Agent 会指出具体操作。
+3. **给出结果。** Agent 核对分流、刷新后的规则和每个浏览器的检测结果，告诉你备份在哪、怎么恢复。
 
 <details>
-<summary>看一段接入对话示例</summary>
+<summary>查看接入结果示例</summary>
 
-**Agent** 问「我找到了你正在使用的代理配置。我会保留节点订阅，让 AgentRoute 接管业务分流和兜底。默认代理继续用你现在的策略组，可以吗？」
-
-**你** 回「用现有的策略组，先备份再改。」
-
-**Agent** 汇报「已备份并替换规则。这次测试连接命中了 AgentRoute 的海外代理规则。节点订阅刷新后，旧规则仍未生效。我会把备份位置和恢复步骤发给你。浏览器 WebRTC 设置和三项自测还待完成。」
+**Agent** 汇报「已备份并替换规则，节点订阅刷新后依然由 AgentRoute 分流。Chrome 已安装并配置 WebRTC 扩展，Edge 已核对原有扩展并调整设置。两款浏览器的检测结果、备份位置和恢复步骤见本次报告。」
 
 </details>
 
@@ -63,11 +58,7 @@ https://ippure.com/Browser-WebRTC-Leak-Detect.html
 
 ## 浏览器检测
 
-请为每个目标浏览器自行完成 WebRTC 防护。支持 WebRTC Network Limiter 的浏览器，安装并启用扩展，在扩展选项中选择「Use my proxy server (if present)」（`disable_non_proxied_udp`）。[官方扩展](https://chromewebstore.google.com/detail/webrtc-network-limiter/npeicpdbkakmehahjeeohfdhnlpdklia) · [Chrome 安装教程](https://support.google.com/chrome_webstore/answer/2664769?hl=zh-Hans) · [Edge 安装教程](https://support.microsoft.com/zh-cn/edge/add-turn-off-or-remove-extensions-in-microsoft-edge)
-
-其他浏览器按实际版本查阅适用的官方资料，完成可核实的等效配置。[各浏览器官方资料](docs/DNS-WEBRTC.md#webrtc-methods)
-
-设置后，在每个目标浏览器的实际使用配置档里打开三个检测页，并检查常用的音视频功能。把结果发给 Agent，请它逐项帮你判断。检测结果覆盖当前浏览器的本次探测。[IP 检测](https://ippure.com/) · [DNS 检测](https://ippure.com/DNS-Leak-Detect.html) · [WebRTC 检测](https://ippure.com/Browser-WebRTC-Leak-Detect.html)
+Agent 按浏览器版本安装并配置适用的 WebRTC 防护，再在实际使用的配置档内逐项检测。检测结果覆盖该配置档的本次探测。[各浏览器官方资料](docs/DNS-WEBRTC.md#webrtc-methods) · [IP 检测](https://ippure.com/) · [DNS 检测](https://ippure.com/DNS-Leak-Detect.html) · [WebRTC 检测](https://ippure.com/Browser-WebRTC-Leak-Detect.html)
 
 <a id="rule-subscriptions"></a>
 <a id="按客户端拿规则"></a>

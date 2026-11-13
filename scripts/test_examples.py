@@ -485,16 +485,16 @@ class AgentGuidanceTests(unittest.TestCase):
             [url for _, url in self.BROWSER_CHECK_LINKS],
         )
         self.assertIn('未验证', prompt)
-        self.assertIn('每个浏览器都必须完成 WebRTC 防护', prompt)
-        self.assertIn('官方安装和配置教程', prompt)
-        self.assertIn('由我在实际使用的配置档中操作', prompt)
+        self.assertIn('本机已安装的所有浏览器', prompt)
+        self.assertIn('缺扩展就从官方商店安装', prompt)
         self.assertIn('WebRTC Network Limiter', prompt)
         self.assertIn('https://chromewebstore.google.com/detail/webrtc-network-limiter/', prompt)
         self.assertIn('disable_non_proxied_udp', prompt)
-        self.assertIn('官方支持的等效配置教程', prompt)
-        self.assertIn('按浏览器核对实际生效的设置和检测结果', prompt)
+        self.assertIn('应用官方支持的等效防护', prompt)
+        self.assertRegex(prompt, r'在每个浏览器实际使用的配置档里[^。\n]*完成 IP、DNS 和 WebRTC 检测')
         guidance = (ROOT / 'AGENTS.md').read_text(encoding='utf-8')
-        self.assertIn('由使用者在实际使用的配置档中操作', guidance)
+        self.assertIn('Agent 从官方商店补装缺失的扩展', guidance)
+        self.assertRegex(guidance, r'Agent 在同一实际使用的配置档[^。\n]*执行 IP、DNS 和 WebRTC 检测')
         self.assertIn('docs/DNS-WEBRTC.md#webrtc-methods', guidance)
 
     def test_acceptance_standard_keeps_every_item_and_its_evidence_rule(self):
