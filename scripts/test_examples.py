@@ -452,6 +452,21 @@ class AgentGuidanceTests(unittest.TestCase):
                 self.assertIn(f']({master}{path})', readme)
                 self.assertRegex(adapters, rf'(?im)^### {re.escape(client)}$')
 
+    def test_default_onboarding_replaces_old_business_rules_and_checks_refresh(self):
+        readme = (ROOT / 'README.md').read_text(encoding='utf-8')
+        prompt_section = readme.partition('<a id="agent-prompt"></a>')[2]
+        prompt = prompt_section.partition('```text\n')[2].partition('\n```')[0]
+        guidance = (ROOT / 'AGENTS.md').read_text(encoding='utf-8')
+        for name, text in (('prompt', prompt), ('guidance', guidance)):
+            with self.subTest(name=name):
+                self.assertRegex(text, r'替换[^。\n]*业务分流[^。\n]*兜底')
+                self.assertIn('停用', text)
+                self.assertIn('保留节点订阅', text)
+                self.assertIn('旧业务规则', text)
+                self.assertIn('旧兜底', text)
+                self.assertRegex(text, r'刷新节点订阅后[^。\n]*回读')
+                self.assertIn('覆盖未完成', text)
+
     def test_browser_checks_link_to_the_three_test_pages(self):
         for name in ('README.md', 'AGENTS.md'):
             with self.subTest(name=name):
