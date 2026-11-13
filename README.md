@@ -46,7 +46,7 @@
 
 准备好现用的代理客户端和可用节点，把下面的提示词复制给 **Codex** 等能操作本机文件和浏览器的 Agent。
 
-1. **替换旧规则。** 备份现用配置，保留节点订阅，接管业务分流和默认兜底。
+1. **替换旧规则。** 备份现用配置，保留节点订阅，接管业务分流和默认兜底，并接入常见 WebRTC 探测拦截。
 2. **配好浏览器。** 检查本机已安装的浏览器，补装或配置适用扩展。遇到必须本人确认的提示时，Agent 会指出具体操作。
 3. **交付检测结果。** 核对实际分流、订阅刷新和每个浏览器的检测结果，附上备份位置与恢复方法。
 
@@ -63,11 +63,13 @@ https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json
 
 先备份配置，保留节点订阅、可用代理策略组和联网所需的技术规则。在订阅刷新后仍生效的配置入口停用旧业务规则、规则集引用和旧兜底，包括节点订阅、覆写或模块带入的规则。让 AgentRoute 接管业务分流，未匹配的流量走默认代理。
 
-接入后回读生效配置，核对实际流量去向、默认代理出站和 Claude 相关域名的命中。刷新节点订阅后，再回读确认旧规则没有恢复。按接入说明核对实际生效的 DNS 策略。
+同时安装索引 protections 中的 webrtc-guard 防护资源，在必要技术规则之后、业务直连之前执行拒绝。我接受它可能影响通话、会议和 P2P；不要设置失败后直连。核对资源加载、真实 UDP 和 IPv6 接管及规则命中，未接管或未覆盖的流量单独说明。
+
+接入后回读生效配置，核对实际流量去向、默认代理出站和 Claude 相关域名的命中。刷新节点订阅后，再回读确认旧规则没有恢复，防护引用和优先级仍在。按接入说明核对实际生效的 DNS 策略。
 
 逐个检查浏览器版本和我实际使用的配置档，记录原设置。支持 WebRTC Network Limiter 的浏览器，缺扩展就从官方商店安装，已有扩展就核对并修正设置。启用扩展并选择 Use my proxy server (if present)，对应 disable_non_proxied_udp。
 https://chromewebstore.google.com/detail/webrtc-network-limiter/npeicpdbkakmehahjeeohfdhnlpdklia
-无法安装这款扩展时，按浏览器版本应用官方支持的等效防护。系统或浏览器要求我本人确认时，把该步骤准备好，等我确认后继续配置和检测。缺少权限或没有可核实方案时，标为待配置并说明原因。继续处理其余项目。
+Chrome 和 Edge 固定使用上述扩展方案。其他浏览器无法安装这款扩展时，按浏览器版本应用官方支持的等效防护。系统或浏览器要求我本人确认时，把该步骤准备好，等我确认后继续配置和检测。缺少权限或没有可核实方案时，标为待配置并说明原因。继续处理其余项目。
 https://github.com/ryuu-restart/agent-route/blob/master/docs/DNS-WEBRTC.md#webrtc-methods
 
 在每个浏览器实际使用的配置档里回读设置，并用以下三个页面完成 IP、DNS 和 WebRTC 检测。交付三个链接、规则覆盖和刷新复查结果、每个浏览器的配置和检测结果、备份位置及恢复方法。未核实的项目注明未验证。
@@ -94,7 +96,7 @@ AgentRoute 的发布校验会检查 `claude.ai`、`claude.com`、`anthropic.com`
 <details>
 <summary>展开规则地址与客户端格式（高级）</summary>
 
-**规则索引**汇总五类规则的地址、格式、条目数和建议刷新间隔，供 Agent 选择资源。[公开索引](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json)
+**规则索引**汇总五类业务规则及独立防护资源的地址、格式、条目数和建议刷新间隔，供 Agent 选择资源。[公开索引](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json)
 
 **给 Agent 的格式入口**适合已经知道客户端或内核的用户。每个入口指向同一份规则索引及对应格式，具体接法以实际内核和版本为准。[客户端参考](docs/CLIENTS.md)
 
@@ -111,6 +113,9 @@ AgentRoute 的发布校验会检查 `claude.ai`、`claude.com`、`anthropic.com`
 | 海外代理 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/proxy.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/proxy.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/proxy.json) |
 | 国内直连 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/direct.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/direct.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/direct.json) |
 | 中国 IP 兜底 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/cn-ip.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/cn-ip.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/cn-ip.json) |
+| WebRTC 常见探测拦截 | [classical YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/webrtc-guard.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/webrtc-guard.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/webrtc-guard.json) |
+
+防护资源需由 Agent 首次接入，之后自动刷新；它拦截已接管的常见探测，可能影响通话及 P2P。[覆盖范围与验收](docs/WEBRTC-GUARD.md)
 
 </details>
 

@@ -321,12 +321,12 @@ class TemplateTests(unittest.TestCase):
         config = json.loads((FULL / 'sing-box.json').read_text(encoding='utf-8'))
         rules = config['route']['rules']
         tags = {item['tag'] for item in config['route']['rule_set']}
-        self.assertEqual(tags, {'sr-' + d for d in DATASETS} | {'sr-non-cn-ip'})
+        self.assertEqual(tags, {'sr-' + d for d in DATASETS} | {'sr-non-cn-ip', 'sr-webrtc-guard'})
         self.assertEqual(rules[0], {'port': 53, 'action': 'hijack-dns'})
         sniff = [i for i, rule in enumerate(rules) if rule.get('action') == 'sniff']
         self.assertEqual(len(sniff), 2)
         final_domain_rules = [rule['rule_set'][0] for rule in rules[sniff[-1] + 1:]]
-        self.assertEqual(final_domain_rules, ['sr-' + d for d in DATASETS])
+        self.assertEqual(final_domain_rules, ['sr-webrtc-guard'] + ['sr-' + d for d in DATASETS])
         first_cn = next(i for i, rule in enumerate(rules) if rule.get('rule_set') == ['sr-cn-ip'])
         self.assertGreater(first_cn, sniff[-1])
         dns_rules = config['dns']['rules']
@@ -448,6 +448,7 @@ class AgentGuidanceTests(unittest.TestCase):
                     'adapter_url': 'https://github.com/ryuu-restart/agent-route/blob/master/docs/CLIENTS.md#' + client,
                     'routing_mode': 'replace',
                     'final_action': 'PROXY',
+                    'protections': ['webrtc-guard'],
                 })
                 self.assertIn(f']({master}{path})', readme)
                 self.assertRegex(adapters, rf'(?im)^### {re.escape(client)}$')
