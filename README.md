@@ -2,11 +2,42 @@
 
 <a id="about"></a>
 
-**想用 Claude，但不想自己研究 YAML、DNS 和分流？把下面的提示词交给 Codex，让它替换旧规则、配置浏览器并验证结果。**
+**想用 Claude，把规则配置与浏览器检查交给 Agent。**
 
-AgentRoute 持续更新分流规则。沿用你的代理客户端和节点，由 AgentRoute 接管业务分流和默认兜底。Agent 会核对实际流量去向，并告诉你怎么恢复。
+沿用你的代理客户端和节点，把一段提示词交给 Codex。Agent 会备份并替换旧业务规则，配置支持的浏览器，再交付分流、DNS 和 WebRTC 检测结果。
 
-**[快速开始 · 复制提示词](#agent-prompt)** · [加入官方微信群](#wechat-group) · [浏览器检测](#browser-checks) · [规则与订阅](#rule-subscriptions)
+**[快速开始 · 复制提示词](#agent-prompt)** · [接入前后对比](#test-results) · [加入官方微信群](#wechat-group)
+
+<a id="test-results"></a>
+
+## 接入前后，有哪些变化？
+
+下面是一次 **FlClash + Chrome** 的用户试跑。用户确认，前后检测使用同一个 Chrome 配置档、同一个节点。
+
+<picture>
+  <source media="(max-width: 767px)" srcset="assets/test-results-2026-11-12-mobile.svg">
+  <img src="assets/test-results-2026-11-12.svg" width="1200" alt="2026-11-12 接入前后对照，Chrome 本次 WebRTC 探测有改善。完整数据可展开下方文字版对照。">
+</picture>
+
+<details>
+<summary>展开文字版对照</summary>
+
+<table>
+  <caption>2026-11-12 用户试跑，来自截图与 Agent 回报</caption>
+  <thead><tr><th scope="col">检查项</th><th scope="col">接入前</th><th scope="col">接入后</th></tr></thead>
+  <tbody>
+    <tr><th scope="row">Chrome WebRTC</th><td>9 项中 3 项返回直连 IP</td><td>9 项均未报告泄露</td></tr>
+    <tr><th scope="row">DNS 截图可见结果</th><td>国内电信及香港解析器</td><td>香港 Google / Cloudflare，未出现前图的国内电信</td></tr>
+    <tr><th scope="row">规则入口</th><td>2,822 条，0 个外部资源</td><td>27 条入口及 5 个远程规则集</td></tr>
+    <tr><th scope="row">节点与策略组</th><td>15 个节点，26 个策略组</td><td>数量保持一致</td></tr>
+  </tbody>
+</table>
+
+</details>
+
+**这次 Chrome 的 9 项 WebRTC 探测均未报告泄露。** DNS 变化以截图可见范围为准。
+
+[查看完整对照与未验证项](docs/TEST-RESULTS.md) · **[快速开始 · 复制提示词](#agent-prompt)**
 
 <a id="让我的-agent-接入"></a>
 <a id="agent-prompt"></a>
@@ -14,6 +45,10 @@ AgentRoute 持续更新分流规则。沿用你的代理客户端和节点，由
 ## 快速开始
 
 准备好现用的代理客户端和可用节点，把下面的提示词复制给 **Codex** 等能操作本机文件和浏览器的 Agent。
+
+1. **替换旧规则。** 备份现用配置，保留节点订阅，接管业务分流和默认兜底。
+2. **配好浏览器。** 检查本机已安装的浏览器，补装或配置适用扩展。遇到必须本人确认的提示时，Agent 会指出具体操作。
+3. **交付检测结果。** 核对实际分流、订阅刷新和每个浏览器的检测结果，附上备份位置与恢复方法。
 
 **禁止使用 Claude（包括 Claude Code 及其他基于 Claude 模型的 Agent）执行本项目的接入、复查或维护任务。**
 
@@ -41,19 +76,6 @@ https://ippure.com/DNS-Leak-Detect.html
 https://ippure.com/Browser-WebRTC-Leak-Detect.html
 ```
 
-### 接下来会发生什么
-
-1. **替换旧规则。** Agent 备份现用配置，保留节点订阅，用 AgentRoute 接管业务分流和默认兜底。
-2. **配好浏览器。** Agent 检查本机所有已安装的浏览器，在支持的浏览器里补装或配置扩展。遇到必须本人确认的提示时，Agent 会指出具体操作。
-3. **给出结果。** Agent 核对分流、刷新后的规则和每个浏览器的检测结果，告诉你备份在哪、怎么恢复。
-
-<details>
-<summary>查看接入结果示例</summary>
-
-**Agent** 汇报「已备份并替换规则，节点订阅刷新后依然由 AgentRoute 分流。Chrome 已安装并配置 WebRTC 扩展，Edge 已核对原有扩展并调整设置。两款浏览器的检测结果、备份位置和恢复步骤见本次报告。」
-
-</details>
-
 <a id="browser-checks"></a>
 
 ## 浏览器检测
@@ -68,6 +90,9 @@ Agent 按浏览器版本安装并配置适用的 WebRTC 防护，再在实际使
 [![自动构建](https://github.com/ryuu-restart/agent-route/actions/workflows/run.yml/badge.svg)](https://github.com/ryuu-restart/agent-route/actions/workflows/run.yml) [![规则库发布时间](https://img.shields.io/github/last-commit/ryuu-restart/agent-route/release?label=%E8%A7%84%E5%88%99%E5%BA%93%E5%8F%91%E5%B8%83%E6%97%B6%E9%97%B4&color=2d8e76)](https://github.com/ryuu-restart/agent-route/commits/release)
 
 AgentRoute 的发布校验会检查 `claude.ai`、`claude.com`、`anthropic.com` 和 `api.anthropic.com` 是否被误归为广告、内网或国内直连。实际规则命中与出站以设备验证结果为准。[构建校验源码](scripts/build_rules.py)
+
+<details>
+<summary>展开规则地址与客户端格式（高级）</summary>
 
 **规则索引**汇总五类规则的地址、格式、条目数和建议刷新间隔，供 Agent 选择资源。[公开索引](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/index.json)
 
@@ -86,6 +111,8 @@ AgentRoute 的发布校验会检查 `claude.ai`、`claude.com`、`anthropic.com`
 | 海外代理 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/proxy.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/proxy.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/proxy.json) |
 | 国内直连 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/direct.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/direct.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/direct.json) |
 | 中国 IP 兜底 | [YAML](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/mihomo/cn-ip.yaml) | [RULE-SET](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/surge/cn-ip.list) | [JSON](https://raw.githubusercontent.com/ryuu-restart/agent-route/release/sing-box/cn-ip.json) |
+
+</details>
 
 <a id="记得经常更新"></a>
 
