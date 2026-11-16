@@ -10,7 +10,7 @@
 
 [![自动构建](https://github.com/ryuu-restart/agent-route/actions/workflows/run.yml/badge.svg)](https://github.com/ryuu-restart/agent-route/actions/workflows/run.yml) [![规则库发布时间](https://img.shields.io/github/last-commit/ryuu-restart/agent-route/release?label=%E8%A7%84%E5%88%99%E5%BA%93%E5%8F%91%E5%B8%83%E6%97%B6%E9%97%B4&color=2d8e76)](https://github.com/ryuu-restart/agent-route/commits/release)
 
-**[快速开始](#agent-prompt)** · [接入前后对比](#test-results) · [规则直链](#rule-subscriptions) · [浏览器验收](#browser-checks) · [官方微信群](#wechat-group)
+**[快速开始](#agent-prompt)** · [接入前后对比](#test-results) · [规则直链](#rule-subscriptions) · [浏览器验收](#browser-checks)
 
 </div>
 
@@ -118,15 +118,10 @@
 </details>
 
 <a id="反馈问题"></a>
-<a id="wechat-group"></a>
 
-## 有问题，一起排查
+## 问题反馈
 
-微信扫码加入 **AgentRoute 官方交流群**。接入卡住、规则没生效，或看不懂检测结果，都可以来交流。
-
-<img src="assets/wechat-group-qr.png" width="280" height="392" alt="微信扫码加入 AgentRoute 官方交流群">
-
-二维码在 **2026 年 11 月 20 日前有效**。[查看原图](assets/wechat-group-qr.png) · [提交 GitHub Issue](https://github.com/ryuu-restart/agent-route/issues/new/choose)
+[提交 GitHub Issue](https://github.com/ryuu-restart/agent-route/issues/new/choose)
 
 反馈时附上系统与客户端版本；请隐去订阅链接、节点地址、凭据和真实 IP。[脱敏说明](AGENTS.md#issue-feedback)
 
